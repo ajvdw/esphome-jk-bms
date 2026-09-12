@@ -1,3 +1,5 @@
+#include "switch/jk_switch.h"
+#include "number/jk_number.h"
 #include "jk_rs485_bms.h"
 
 namespace esphome {
