@@ -48,20 +48,6 @@ float int16_to_float(const uint8_t *byteArray) {
 }
 
 
-// (JkRS485Bms::JkRS485Bms_init(void) was removed here: dead code, never
-// called from anywhere. It unconditionally `new`'d a full set of
-// switch/number/sensor objects for every possible entity, leaking whatever
-// the Python codegen had already `set_...()`'d (no matching `delete`), and
-// would have silently defeated the nullptr-means-"not configured in YAML"
-// convention the rest of this file relies on - see the null checks in
-// trigger_bms2sniffer_switch16_event/number16_event and
-// cell_count_settings_number_ usage.)
-
-// switch/number setters removed - this build has no jk_switch/jk_number dependency.
-
-
-
-
 static const char *const TAG = "jk_rs485_bms";
 
 static const uint8_t MAX_NO_RESPONSE_COUNT = 10;
@@ -140,65 +126,6 @@ void JkRS485Bms::trigger_bms2sniffer_event(std::string event, std::uint8_t frame
   }
 }
 
-/*
-void JkRS485Bms::trigger_bms2sniffer_switch_or_number_uint32_event(std::uint16_t register_address,std::uint8_t third_element_of_frame, std::uint32_t value){
-    ESP_LOGD(TAG, "Entering trigger_bms2sniffer_switch_or_number_uint32_event");
-    //[0x0000, 0x10,   0x04,  3,  0],
-
-    // Verificación de `this`
-    if (this == nullptr) {
-        ESP_LOGE(TAG, "switch THIS (this->) is null");
-        return;
-    }
-
-//    // Log final
-    //ESP_LOGD(TAG, "BMS address %02X switch_register_address [32bit] %02X", this->address_, register_address);
-    this->parent_->handle_bms2sniffer_switch_or_number_uint32_event(this->address_, third_element_of_frame, register_address, value);
-}
-
-void JkRS485Bms::trigger_bms2sniffer_switch_or_number_int32_event(std::uint16_t register_address,std::uint8_t third_element_of_frame, std::int32_t value){
-    ESP_LOGD(TAG, "Entering trigger_bms2sniffer_switch_or_number_int32_event");
-
-    // Verificación de `this`
-    if (this == nullptr) {
-        ESP_LOGE(TAG, "switch THIS (this->) is null");
-        return;
-    }
-
-//    // Log final
-    ESP_LOGD(TAG, "BMS address %02X switch_register_address [32bit] %02X", this->address_, register_address);
-    this->parent_->handle_bms2sniffer_switch_or_number_int32_event(this->address_,third_element_of_frame, register_address, value);
-}
-*/
-
-/*void uint64_to_binary_str(uint64_t value, char *buffer, size_t buffer_size) {
-    if (buffer_size < 65) { // 64 bits + 1 for null terminator
-        return; // Buffer too small
-    }
-    buffer[64] = '\0'; // Null terminator
-    for (int i = 63; i >= 0; --i) {
-        buffer[i] = (value & 1) ? '1' : '0';
-        value >>= 1;
-    }
-}*/
-
-/*
-void JkRS485Bms::trigger_bms2sniffer_switch16_event(std::uint16_t register_address,std::uint8_t third_element_of_frame){
-    // Switch entities (and the register write-back they fed) were removed from
-    // this build - nothing configures controllable switches anymore, so there
-    // is nothing to encode here.
-    ESP_LOGD(TAG, "trigger_bms2sniffer_switch16_event: switch entities removed, ignoring (register 0x%02X)", register_address);
-}
-
-
-
-void JkRS485Bms::trigger_bms2sniffer_number16_event(std::uint16_t register_address,std::uint8_t third_element_of_frame){
-    // Number entities (and the register write-back they fed) were removed
-    // from this build - nothing configures controllable numbers anymore, so
-    // there is nothing to encode here.
-    ESP_LOGD(TAG, "trigger_bms2sniffer_number16_event: number entities removed, ignoring (register 0x%02X)", register_address);
-}
-*/
 
 
 void JkRS485Bms::on_jk_rs485_sniffer_data(const uint8_t &origin_address, const uint8_t &frame_type,

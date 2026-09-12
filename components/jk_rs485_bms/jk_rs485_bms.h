@@ -47,13 +47,6 @@ class JkRS485Bms : public PollingComponent, public jk_rs485_sniffer::JkRS485Snif
 
   void trigger_bms2sniffer_event(std::string event, std::uint8_t frame_type);
 
-/*
-  void trigger_bms2sniffer_switch16_event(std::uint16_t register_address,std::uint8_t third_element_of_frame);
-  void trigger_bms2sniffer_number16_event(std::uint16_t register_address,std::uint8_t third_element_of_frame);
-  
-  void trigger_bms2sniffer_switch_or_number_uint32_event(std::uint16_t register_address,std::uint8_t third_element_of_frame, std::uint32_t value);
-  void trigger_bms2sniffer_switch_or_number_int32_event(std::uint16_t register_address,std::uint8_t third_element_of_frame, std::int32_t value);
-*/
   void set_smart_sleep_time_sensor(sensor::Sensor *smart_sleep_time_sensor) {
     smart_sleep_time_sensor_ = smart_sleep_time_sensor;
   }
