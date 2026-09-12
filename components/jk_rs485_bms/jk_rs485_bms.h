@@ -4,7 +4,6 @@
 #include "esphome/components/sensor/sensor.h"
 #include "esphome/components/text_sensor/text_sensor.h"
 #include "../jk_rs485_sniffer/jk_rs485_sniffer.h"
-//#include "esphome/core/component.h"
 
 namespace esphome {
 
@@ -48,12 +47,13 @@ class JkRS485Bms : public PollingComponent, public jk_rs485_sniffer::JkRS485Snif
 
   void trigger_bms2sniffer_event(std::string event, std::uint8_t frame_type);
 
+/*
   void trigger_bms2sniffer_switch16_event(std::uint16_t register_address,std::uint8_t third_element_of_frame);
   void trigger_bms2sniffer_number16_event(std::uint16_t register_address,std::uint8_t third_element_of_frame);
   
   void trigger_bms2sniffer_switch_or_number_uint32_event(std::uint16_t register_address,std::uint8_t third_element_of_frame, std::uint32_t value);
   void trigger_bms2sniffer_switch_or_number_int32_event(std::uint16_t register_address,std::uint8_t third_element_of_frame, std::int32_t value);
-
+*/
   void set_smart_sleep_time_sensor(sensor::Sensor *smart_sleep_time_sensor) {
     smart_sleep_time_sensor_ = smart_sleep_time_sensor;
   }
@@ -62,7 +62,8 @@ class JkRS485Bms : public PollingComponent, public jk_rs485_sniffer::JkRS485Snif
   }
   void set_balancing_direction_sensor(sensor::Sensor *balancing_direction_sensor) {
     balancing_direction_sensor_ = balancing_direction_sensor;
-  } 
+  }
+ 
   void set_status_balancing_binary_sensor(binary_sensor::BinarySensor *status_balancing_binary_sensor) {
     status_balancing_binary_sensor_ = status_balancing_binary_sensor;
   }
@@ -86,23 +87,14 @@ class JkRS485Bms : public PollingComponent, public jk_rs485_sniffer::JkRS485Snif
     balancing_switch_binary_sensor_ = balancing_switch_binary_sensor;
   }
 
-  //void set_charging_binary_sensor(binary_sensor::BinarySensor *charging_binary_sensor) {
-  //  charging_binary_sensor_ = charging_binary_sensor;
-  //}
   void set_charging_switch_binary_sensor(binary_sensor::BinarySensor *charging_switch_binary_sensor) {
     charging_switch_binary_sensor_ = charging_switch_binary_sensor;
   }
 
-  //void set_precharging_binary_sensor(binary_sensor::BinarySensor *precharging_binary_sensor) {
-  //  precharging_binary_sensor_ = precharging_binary_sensor;
-  //}
   void set_precharging_switch_binary_sensor(binary_sensor::BinarySensor *precharging_switch_binary_sensor) {
     precharging_switch_binary_sensor_ = precharging_switch_binary_sensor;
   }  
   
-  //void set_discharging_binary_sensor(binary_sensor::BinarySensor *discharging_binary_sensor) {
-  //  discharging_binary_sensor_ = discharging_binary_sensor;
-  //}
   void set_discharging_switch_binary_sensor(binary_sensor::BinarySensor *discharging_switch_binary_sensor) {
     discharging_switch_binary_sensor_ = discharging_switch_binary_sensor;
   }
@@ -154,9 +146,6 @@ class JkRS485Bms : public PollingComponent, public jk_rs485_sniffer::JkRS485Snif
   void set_cell_resistance_sensor(uint8_t cell, sensor::Sensor *cell_resistance_sensor) {
     this->cells_[cell].cell_resistance_sensor_ = cell_resistance_sensor;
   }
-//  void set_temperature_temperature_sensor(uint8_t i, sensor::Sensor *temperature_temperature_sensor) {
-//    this->temperatures_[i].temperature_sensor_ = temperature_temperature_sensor;
-//  }  
   void set_temperature_sensor(uint8_t i, sensor::Sensor *temperature_sensor) {
     this->temperatures_[i].temperature_sensor_ = temperature_sensor;
   }    
@@ -397,9 +386,6 @@ class JkRS485Bms : public PollingComponent, public jk_rs485_sniffer::JkRS485Snif
 
 
 
-  //void set_battery_total_alarms_count(uint8_t battery_total_alarms_count) { battery_total_alarms_count_ = battery_total_alarms_count; }
-  //void set_battery_total_alarms_active(uint8_t battery_total_alarms_active) { battery_total_alarms_active_ = battery_total_alarms_active; }  
-
   // ALARMS
   void set_alarm_wireres_binary_sensor(binary_sensor::BinarySensor *alarm_wireres_binary_sensor) {
     alarm_wireres_binary_sensor_ = alarm_wireres_binary_sensor;
@@ -608,8 +594,6 @@ class JkRS485Bms : public PollingComponent, public jk_rs485_sniffer::JkRS485Snif
 
   void update() override;
 
-  //bool write_register(uint8_t address, uint32_t value, uint8_t length);
-
  protected:
   jk_rs485_sniffer::JkRS485Sniffer *parent_;
   ProtocolVersion protocol_version_{PROTOCOL_VERSION_JK02_32S};
@@ -624,10 +608,6 @@ class JkRS485Bms : public PollingComponent, public jk_rs485_sniffer::JkRS485Snif
     sensor::Sensor* cell_resistance_sensor_;  // Puntero al sensor de resistencia
   };  
 
-  struct CellInformation {
-    sensor::Sensor *cell_voltage_sensor_; 
-    sensor::Sensor *cell_resistance_sensor_; 
-  };
   struct Temperature {
     sensor::Sensor *temperature_sensor_{nullptr};
   };

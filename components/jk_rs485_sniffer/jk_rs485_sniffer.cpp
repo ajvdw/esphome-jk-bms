@@ -100,11 +100,6 @@ void JkRS485Sniffer::set_broadcast_changes_to_all_bms(bool state) {
 
 
 
-bool JkRS485Sniffer::get_broadcast_changes_to_all_bms() const {
-    return this->broadcast_changes_to_all_bms_;
-}
-
-
 void JkRS485Sniffer::handle_bms2sniffer_event(std::uint8_t slave_address, std::string event, std::uint8_t frame_type){
   // Maneja el evento aquí. Por ejemplo, puedes imprimir el evento:
   ESP_LOGD(TAG,"Received Event from BMS.. [address:0x%02X] @ %d -->  %s", slave_address, frame_type, event.c_str());
@@ -143,6 +138,7 @@ void JkRS485Sniffer::handle_bms2sniffer_event(std::uint8_t slave_address, std::s
   }  
 }
 
+/*
 void JkRS485Sniffer::handle_bms2sniffer_switch_or_number_uint32_event(std::uint8_t slave_address, std::uint8_t third_element_of_frame, std::uint16_t register_address, std::uint32_t value) {
 
   // 02.10.10.78.00.02.04.00.00.00.00.37.A9
@@ -174,7 +170,6 @@ void JkRS485Sniffer::handle_bms2sniffer_switch_or_number_uint32_event(std::uint8
 
   
 
-//  return (status == 0);
 }
 
 
@@ -207,36 +202,6 @@ void JkRS485Sniffer::handle_bms2sniffer_switch_or_number_int32_event(std::uint8_
 
   
 
-//  return (status == 0);
-}
-
-void JkRS485Sniffer::handle_bms2sniffer_switch_or_number_uint16_event(std::uint8_t slave_address, std::uint8_t third_element_of_frame, std::uint16_t register_address, std::uint16_t value) {
-
-  // rs485_network_node[] only has 16 slots - see handle_bms2sniffer_event().
-  if (slave_address > 15) {
-    ESP_LOGE(TAG, "slave_address 0x%02X out of range (max 15), ignoring", slave_address);
-    return;
-  }
-
-  if (rs485_network_node[slave_address].available) {
-    send_command_switch_or_number_to_slave_uint16(slave_address,third_element_of_frame,register_address,value);
-    rs485_network_node[slave_address].last_device_info_request_received_OK=0;
-  }
-
-  if (this->broadcast_changes_to_all_bms_==true){
-    for (uint8_t j = 1; j < 16; ++j) {
-        if (rs485_network_node[j].available && slave_address!=j) {
-            delayMicroseconds(50000);
-            send_command_switch_or_number_to_slave_uint16(j,third_element_of_frame,register_address,value);
-            rs485_network_node[j].last_device_info_request_received_OK=0;
-        }
-    }
-  }
-
-
-  
-
-//  return (status == 0);
 }
 
 void JkRS485Sniffer::send_command_switch_or_number_to_slave_uint32(std::uint8_t slave_address, std::uint8_t third_element_of_frame, std::uint16_t register_address, std::uint32_t value) {
@@ -275,46 +240,6 @@ void JkRS485Sniffer::send_command_switch_or_number_to_slave_uint32(std::uint8_t 
 
 
   ESP_LOGD(TAG, "MESSAGE REQUEST TO SEND switch >>: %s",format_hex_pretty(frame, size).c_str());
-//  // Enviar el array de bytes por UART
-  std::vector<uint8_t> data_to_send(frame, frame + size / sizeof(frame[0]));
-
-  if (talk_pin_needed_) { this->talk_pin_->digital_write(1); }
-  delayMicroseconds(50); //50us
-  this->write_array(data_to_send);
-  this->flush();
-  if (talk_pin_needed_) { this->talk_pin_->digital_write(0); } 
-  delayMicroseconds(50); //50us
-   
-  const uint32_t now=millis();
-  this->rs485_network_node[slave_address].last_request_sent=now;  
-  this->last_jk_rs485_network_activity_=now;   
-}
-
-void JkRS485Sniffer::send_command_switch_or_number_to_slave_uint16(std::uint8_t slave_address, std::uint8_t third_element_of_frame, std::uint16_t register_address, std::uint16_t value) {
-  uint8_t frame[13];
-  uint8_t size=0;
-
-  //02.10.11.14.00.01.   02.  02.10.   B0.19
-
-  frame[0]  = slave_address ;                   // Slave Address
-  frame[1]  = 0x10;                             //
-  frame[2]  = third_element_of_frame;           // High byte of the register's absolute Modbus
-                                                 // address - see send_command_switch_or_number_to_slave_uint32().
-  frame[3]  = (register_address & 0x00FF) >> 0; // Low byte of the register's absolute address.
-  frame[4]  = 0x00;                             // Fixed filler, not part of the address.
-  frame[5]  = 0x01;                             //
-  frame[6]  = 2;                                // Length of data in number of Bytes
-  frame[7]  = (value & 0xFF00) >> 8;            // Data Byte 1
-  frame[8]  = (value & 0x00FF) >> 0;            // Data Byte 2
-  size=11; 
-
-  uint16_t computed_checksum = crc16_c(frame, size-2);
-  frame[9] = ((computed_checksum & 0xFF00)>>8);
-  frame[10] = ((computed_checksum & 0x00FF)>>0);
-     
-
-
-  ESP_LOGD(TAG, "MESSAGE REQUEST TO SEND switch or number >>: %s",format_hex_pretty(frame, size).c_str());
 //  // Enviar el array de bytes por UART
   std::vector<uint8_t> data_to_send(frame, frame + size / sizeof(frame[0]));
 
@@ -369,7 +294,7 @@ void JkRS485Sniffer::send_command_switch_or_number_to_slave_int32(std::uint8_t s
   this->rs485_network_node[slave_address].last_request_sent=now;  
   this->last_jk_rs485_network_activity_=now;   
 }
-
+*/
 
 void JkRS485Sniffer::send_request_to_slave(uint8_t address, uint8_t frame_type){
 
@@ -412,10 +337,6 @@ void JkRS485Sniffer::send_request_to_slave(uint8_t address, uint8_t frame_type){
     const uint32_t now=millis();
     this->rs485_network_node[address].last_request_sent=now;  
     this->last_jk_rs485_network_activity_=now;     
-//    this->last_jk_rs485_network_activity_=now;
-//    if (this->act_as_master==true){
-//      this->last_message_received_acting_as_master=now;
-//    }  
 
 }
 
@@ -568,8 +489,6 @@ void JkRS485Sniffer::loop() {
     
     if (original_buffer_size==0){
       ESP_LOGV(TAG,     "Buffer empty");
-//    } else {
-//      ESP_LOGD(TAG,     "Buffer after at the end:   %s",format_hex_pretty(&this->rx_buffer_.front(), this->rx_buffer_.size()).c_str());
     }
     
     
@@ -617,7 +536,6 @@ void JkRS485Sniffer::loop() {
               this->last_jk_rs485_pooling_trial_=now;
               //NORMAL POOLING LOOP AS MASTER
               if (this->calculate_next_pooling()==true){
-                //ESP_LOGI(TAG, "CALCULATED NEXT POOLING...0x%02X @ %d",this->pooling_index.node_address,this->pooling_index.frame_type);
                 this->send_request_to_slave(this->pooling_index.node_address,this->pooling_index.frame_type);
 
               }
@@ -661,12 +579,6 @@ void JkRS485Sniffer::loop() {
     }
   }
 }
-
-//void JkRS485Sniffer::send_rs485_message(uint8_t message[])
-//}
-
-
-
 
 std::string JkRS485Sniffer::nodes_available_to_string() {
     std::string bufferHex;
@@ -713,22 +625,6 @@ void JkRS485Sniffer::set_node_availability(uint8_t address,bool value){
 
 
 
-
-void JkRS485Sniffer::printBuffer(uint16_t max_length){
-  std::string bufferHex;
-
-  bufferHex="";
-  // Volcar el contenido del buffer en el string en formato hexadecimal
-  for (auto byte : this->rx_buffer_) {
-      char hexByte[3];
-      sprintf(hexByte, "%02X", byte);
-      bufferHex += hexByte;
-      if (max_length>0 and 2*max_length<=bufferHex.length()){
-        break;
-      }
-  }  
-  ESP_LOGI("BUFFER", "(%d): %s",this->rx_buffer_.size(), bufferHex.c_str());
-}
 
 void JkRS485Sniffer::detected_master_activity_now(void){
   const uint32_t now = millis();
@@ -934,10 +830,6 @@ uint8_t JkRS485Sniffer::manage_rx_buffer_(void) {
     return true;
   };
 
-  /*
-  const size_t free_heap = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
-  ESP_LOGV(TAG, "free_heap %f kBytes [buffer: %d bytes]",((float)free_heap/1024),this->rx_buffer_.size());
-  */
   if (try_parse_short_request()) {
     return(result);
   }
