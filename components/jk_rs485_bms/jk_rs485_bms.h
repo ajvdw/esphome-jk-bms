@@ -1,7 +1,5 @@
 #pragma once
 
-#include "number/jk_number.h"
-#include "switch/jk_switch.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/components/sensor/sensor.h"
 #include "esphome/components/text_sensor/text_sensor.h"
@@ -26,8 +24,6 @@ float int32_to_float(const uint8_t* byteArray);
 float uint16_to_float(const uint8_t *byteArray);
 float int16_to_float(const uint8_t *byteArray);
 
-class JkRS485BmsSwitch;  // Declaración anticipada de JkRS485BmsSwitch
-class JkRS485BmsNumber;  // Declaración anticipada de JkRS485BmsNumber
 
 enum ProtocolVersion {
   PROTOCOL_VERSION_JK04,
@@ -35,15 +31,6 @@ enum ProtocolVersion {
   PROTOCOL_VERSION_JK02_32S,
 };
 
-/*
-El problema que estás experimentando se debe a que el compilador encuentra referencias a JkRS485BmsSwitch en el archivo jk_rs485_bms.h antes de conocer la 
-definición de la clase JkRS485BmsSwitch. 
-
-Esto ocurre porque jk_rs485_bms.h se incluye antes de que el compilador haya procesado la definición de JkRS485BmsSwitch.
-1º jk_rs485_bms.h
-2º jk_switch.h
-
-*/
 class JkRS485Bms : public PollingComponent, public jk_rs485_sniffer::JkRS485SnifferDevice {
  public:
   // Constructor por defecto necesario para crear instancias sin argumentos
@@ -542,59 +529,7 @@ class JkRS485Bms : public PollingComponent, public jk_rs485_sniffer::JkRS485Snif
 
 
 
-  void set_disable_pcl_module_switch(JkRS485BmsSwitch *disable_pcl_module_switch);
-
-  void set_precharging_switch(JkRS485BmsSwitch *precharging_switch);
-  void set_charging_switch(JkRS485BmsSwitch *charging_switch);
-  void set_discharging_switch(JkRS485BmsSwitch *discharging_switch);
-  void set_balancing_switch(JkRS485BmsSwitch *balancer_switch);
-  void set_emergency_switch(JkRS485BmsSwitch *emergency_switch);
-  void set_heating_switch(JkRS485BmsSwitch *heating_switch);
-  void set_display_always_on_switch(JkRS485BmsSwitch *display_always_on_switch);
-  void set_charging_float_mode_switch(JkRS485BmsSwitch *charging_float_mode_switch);
-  void set_disable_temperature_sensors_switch(JkRS485BmsSwitch *disable_temperature_sensors_switch);
-  void set_timed_stored_data_switch(JkRS485BmsSwitch *timed_stored_data_switch);
-  void set_gps_heartbeat_switch(JkRS485BmsSwitch *gps_heartbeat_switch);
-  void set_port_selection_switch(JkRS485BmsSwitch *port_selection_switch);
-  void set_special_charger_switch(JkRS485BmsSwitch *special_charger_switch);
-  void set_smart_sleep_on_switch(JkRS485BmsSwitch *smart_sleep_on_switch);
-
-  void set_cell_smart_sleep_voltage_number(JkRS485BmsNumber *cell_smart_sleep_voltage_number);
-  void set_cell_undervoltage_protection_number(JkRS485BmsNumber *cell_undervoltage_protection_number);
-  void set_cell_undervoltage_protection_recovery_number(JkRS485BmsNumber *cell_undervoltage_protection_recovery_number);
-  void set_cell_overvoltage_protection_number(JkRS485BmsNumber *cell_overvoltage_protection_number);
-  void set_cell_overvoltage_protection_recovery_number(JkRS485BmsNumber *cell_overvoltage_protection_recovery_number);
-  void set_cell_balancing_trigger_voltage_number(JkRS485BmsNumber *cell_balancing_trigger_voltage_number);
-  void set_cell_soc100_voltage_number(JkRS485BmsNumber *cell_soc100_voltage_number);
-  void set_cell_soc0_voltage_number(JkRS485BmsNumber *cell_soc0_voltage_number);
-  void set_cell_request_charge_voltage_number(JkRS485BmsNumber *cell_request_charge_voltage_number);
-  void set_cell_request_float_voltage_number(JkRS485BmsNumber *cell_request_float_voltage_number);
-  void set_cell_power_off_voltage_number(JkRS485BmsNumber *cell_power_off_voltage_number);
-  void set_cell_balancing_starting_voltage_number(JkRS485BmsNumber *cell_balancing_starting_voltage_number);
-  void set_max_charging_current_number(JkRS485BmsNumber *max_charging_current_number);
-  void set_charging_overcurrent_protection_delay_number(JkRS485BmsNumber *charging_overcurrent_protection_delay_number);
-  void set_charging_overcurrent_protection_recovery_delay_number(JkRS485BmsNumber *charging_overcurrent_protection_recovery_delay_number);
-  void set_max_discharging_current_number(JkRS485BmsNumber *max_discharging_current_number);
-  void set_discharging_overcurrent_protection_delay_number(JkRS485BmsNumber *discharging_overcurrent_protection_delay_number);
-  void set_discharging_overcurrent_protection_recovery_delay_number(JkRS485BmsNumber *discharging_overcurrent_protection_recovery_delay_number);
-  void set_short_circuit_protection_delay_number(JkRS485BmsNumber *short_circuit_protection_delay_number);
-  void set_short_circuit_protection_recovery_delay_number(JkRS485BmsNumber *short_circuit_protection_recovery_delay_number);
-  void set_max_balancing_current_number(JkRS485BmsNumber *max_balancing_current_number);
-
-  void set_charging_overtemperature_protection_number(JkRS485BmsNumber *charging_overtemperature_protection_number);
-  void set_charging_overtemperature_protection_recovery_number(JkRS485BmsNumber *charging_overtemperature_protection_recovery_number);
-  void set_discharging_overtemperature_protection_number(JkRS485BmsNumber *discharging_overtemperature_protection_number);
-  void set_discharging_overtemperature_protection_recovery_number(JkRS485BmsNumber *discharging_overtemperature_protection_recovery_number);
-  void set_charging_lowtemperature_protection_number(JkRS485BmsNumber *charging_lowtemperature_protection_number);
-  void set_charging_lowtemperature_protection_recovery_number(JkRS485BmsNumber *charging_lowtemperature_protection_recovery_number);
-  void set_mos_overtemperature_protection_number(JkRS485BmsNumber *mos_overtemperature_protection_number);
-  void set_mos_overtemperature_protection_recovery_number(JkRS485BmsNumber *mos_overtemperature_protection_recovery_number);
-
-  void set_cell_count_settings_number(JkRS485BmsNumber *cell_count_settings_number);
-  void set_battery_capacity_total_settings_number(JkRS485BmsNumber *battery_capacity_total_settings_number);
-  void set_precharging_time_from_discharge_number(JkRS485BmsNumber *precharging_time_from_discharge_number);
-  void set_cell_request_charge_voltage_time_number(JkRS485BmsNumber *cell_request_charge_voltage_time_number);
-  void set_cell_request_float_voltage_time_number(JkRS485BmsNumber *cell_request_float_voltage_time_number);
+  // switch/number setters removed - this build has no jk_switch/jk_number dependency.
 
   
 
@@ -683,7 +618,6 @@ class JkRS485Bms : public PollingComponent, public jk_rs485_sniffer::JkRS485Snif
   uint8_t battery_total_alarms_count_;
   uint8_t battery_total_alarms_active_;
   std::string nodes_available;
-  //std::vector<JkRS485BmsSwitch *> switches_; 
 
   struct CellInfo {
     sensor::Sensor* cell_voltage_sensor_;  // Puntero al sensor de voltaje
@@ -718,8 +652,6 @@ class JkRS485Bms : public PollingComponent, public jk_rs485_sniffer::JkRS485Snif
   void on_status_data_(const std::vector<uint8_t> &data);
   void publish_state_(binary_sensor::BinarySensor *binary_sensor, const bool &state);
   void publish_state_(sensor::Sensor *sensor, float value);
-  void publish_state_(JkRS485BmsSwitch *obj, const bool &state);
-  void publish_state_(JkRS485BmsNumber *number, float value);  
   void publish_state_(text_sensor::TextSensor *text_sensor, const std::string &state);
   void publish_alarm_state_(binary_sensor::BinarySensor *binary_sensor, const bool &state);  
   void publish_device_unavailable_();
@@ -728,6 +660,11 @@ class JkRS485Bms : public PollingComponent, public jk_rs485_sniffer::JkRS485Snif
 
 
   bool status_notification_received_ = false;
+
+  // Internal replacement for the old cell_count_settings_number_ entity:
+  // still gates cell-info decoding on a valid cell count from the settings
+  // frame, without needing a jk_number entity configured in YAML.
+  float cell_count_settings_value_{0};
 
   uint32_t last_cell_info_{0};
   uint32_t throttle_;
@@ -784,21 +721,7 @@ class JkRS485Bms : public PollingComponent, public jk_rs485_sniffer::JkRS485Snif
   }
 
   private:
-    JkRS485BmsSwitch *precharging_switch_;
-    JkRS485BmsSwitch *charging_switch_;
-    JkRS485BmsSwitch *discharging_switch_;
-    JkRS485BmsSwitch *balancer_switch_;
-    JkRS485BmsSwitch *emergency_switch_;
-    JkRS485BmsSwitch *heating_switch_;
-    JkRS485BmsSwitch *charging_float_mode_switch_;
-    JkRS485BmsSwitch *disable_temperature_sensors_switch_;
-    JkRS485BmsSwitch *display_always_on_switch_;
-    JkRS485BmsSwitch *smart_sleep_on_switch_;
-    JkRS485BmsSwitch *timed_stored_data_switch_;
-    JkRS485BmsSwitch *disable_pcl_module_switch_;
-    JkRS485BmsSwitch *gps_heartbeat_switch_;
-    JkRS485BmsSwitch *port_selection_switch_;
-    JkRS485BmsSwitch *special_charger_switch_;  
+    // switch entities removed - this build has no jk_switch dependency.
 
     text_sensor::TextSensor *battery_type_text_sensor_;
     text_sensor::TextSensor *password_text_sensor_;
@@ -969,43 +892,7 @@ class JkRS485Bms : public PollingComponent, public jk_rs485_sniffer::JkRS485Snif
 
 
     
-    JkRS485BmsNumber *cell_smart_sleep_voltage_number_;
-    JkRS485BmsNumber *cell_undervoltage_protection_number_;  
-    JkRS485BmsNumber *cell_undervoltage_protection_recovery_number_;    
-    JkRS485BmsNumber *cell_overvoltage_protection_number_;  
-    JkRS485BmsNumber *cell_overvoltage_protection_recovery_number_; 
-    JkRS485BmsNumber *cell_balancing_trigger_voltage_number_; 
-    JkRS485BmsNumber *cell_soc100_voltage_number_;
-    JkRS485BmsNumber *cell_soc0_voltage_number_; 
-    JkRS485BmsNumber *cell_request_charge_voltage_number_; 
-    JkRS485BmsNumber *cell_request_float_voltage_number_; 
-    JkRS485BmsNumber *cell_power_off_voltage_number_;
-    JkRS485BmsNumber *cell_balancing_starting_voltage_number_;
-    JkRS485BmsNumber *max_charging_current_number_;    
-    JkRS485BmsNumber *charging_overcurrent_protection_delay_number_;  
-    JkRS485BmsNumber *charging_overcurrent_protection_recovery_delay_number_;  
-    JkRS485BmsNumber *max_discharging_current_number_;    
-    JkRS485BmsNumber *discharging_overcurrent_protection_delay_number_;  
-    JkRS485BmsNumber *discharging_overcurrent_protection_recovery_delay_number_;  
-    JkRS485BmsNumber *short_circuit_protection_delay_number_;     
-    JkRS485BmsNumber *short_circuit_protection_recovery_delay_number_; 
-    JkRS485BmsNumber *max_balancing_current_number_; 
-
-    JkRS485BmsNumber *charging_overtemperature_protection_number_; 
-    JkRS485BmsNumber *charging_overtemperature_protection_recovery_number_; 
-    JkRS485BmsNumber *discharging_overtemperature_protection_number_; 
-    JkRS485BmsNumber *discharging_overtemperature_protection_recovery_number_; 
-    JkRS485BmsNumber *charging_lowtemperature_protection_number_; 
-    JkRS485BmsNumber *charging_lowtemperature_protection_recovery_number_; 
-    JkRS485BmsNumber *mos_overtemperature_protection_number_; 
-    JkRS485BmsNumber *mos_overtemperature_protection_recovery_number_;
-
-    JkRS485BmsNumber *cell_count_settings_number_;
-    JkRS485BmsNumber *battery_capacity_total_settings_number_;
-    JkRS485BmsNumber *precharging_time_from_discharge_number_;
-
-    JkRS485BmsNumber *cell_request_charge_voltage_time_number_;
-    JkRS485BmsNumber *cell_request_float_voltage_time_number_;
+    // number entities removed - this build has no jk_number dependency.
 
     
 

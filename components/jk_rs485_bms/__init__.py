@@ -5,7 +5,7 @@ from esphome.const import CONF_ID
 
 from ..jk_rs485_sniffer import CONF_JK_RS485_SNIFFER_ID, JK_RS485_SNIFFER_COMPONENT_SCHEMA, jk_rs485_sniffer_ns
 
-AUTO_LOAD = ["jk_rs485_sniffer", "binary_sensor", "sensor", "switch", "text_sensor"]
+AUTO_LOAD = ["jk_rs485_sniffer", "binary_sensor", "sensor", "text_sensor"]
 CODEOWNERS = ["@syssi"]
 MULTI_CONF = True
 
