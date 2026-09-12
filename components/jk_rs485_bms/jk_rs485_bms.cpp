@@ -140,6 +140,7 @@ void JkRS485Bms::trigger_bms2sniffer_event(std::string event, std::uint8_t frame
   }
 }
 
+/*
 void JkRS485Bms::trigger_bms2sniffer_switch_or_number_uint32_event(std::uint16_t register_address,std::uint8_t third_element_of_frame, std::uint32_t value){
     ESP_LOGD(TAG, "Entering trigger_bms2sniffer_switch_or_number_uint32_event");
     //[0x0000, 0x10,   0x04,  3,  0],
@@ -168,6 +169,7 @@ void JkRS485Bms::trigger_bms2sniffer_switch_or_number_int32_event(std::uint16_t 
     ESP_LOGD(TAG, "BMS address %02X switch_register_address [32bit] %02X", this->address_, register_address);
     this->parent_->handle_bms2sniffer_switch_or_number_int32_event(this->address_,third_element_of_frame, register_address, value);
 }
+*/
 
 /*void uint64_to_binary_str(uint64_t value, char *buffer, size_t buffer_size) {
     if (buffer_size < 65) { // 64 bits + 1 for null terminator
@@ -180,6 +182,7 @@ void JkRS485Bms::trigger_bms2sniffer_switch_or_number_int32_event(std::uint16_t 
     }
 }*/
 
+/*
 void JkRS485Bms::trigger_bms2sniffer_switch16_event(std::uint16_t register_address,std::uint8_t third_element_of_frame){
     // Switch entities (and the register write-back they fed) were removed from
     // this build - nothing configures controllable switches anymore, so there
@@ -195,8 +198,7 @@ void JkRS485Bms::trigger_bms2sniffer_number16_event(std::uint16_t register_addre
     // there is nothing to encode here.
     ESP_LOGD(TAG, "trigger_bms2sniffer_number16_event: number entities removed, ignoring (register 0x%02X)", register_address);
 }
-
-
+*/
 
 
 void JkRS485Bms::on_jk_rs485_sniffer_data(const uint8_t &origin_address, const uint8_t &frame_type,
@@ -276,11 +278,6 @@ void JkRS485Bms::on_jk_rs485_sniffer_data(const uint8_t &origin_address, const u
 void JkRS485Bms::decode_jk02_cell_info_(const std::vector<uint8_t> &data) {
 
 
-  //const uint32_t now = millis();
-  //if (now - this->last_cell_info_ < this->throttle_) {
-  //  return;
-  //}
-  //this->last_cell_info_ = now;
 
   uint8_t frame_version = FRAME_VERSION_JK02_24S;
   uint8_t offset = 0;
@@ -383,7 +380,6 @@ void JkRS485Bms::decode_jk02_cell_info_(const std::vector<uint8_t> &data) {
     }
 
 
-    ESP_LOGVV(TAG, "Debug point 000 %d (--> %f) (--> %f)",i, cell_voltage, cell_resistance);
 
 
     ESP_LOGD(TAG, "[ADDRESS: %02X]  %02d --> V: %fV",this->address_,i, cell_voltage);
@@ -402,7 +398,6 @@ void JkRS485Bms::decode_jk02_cell_info_(const std::vector<uint8_t> &data) {
 
 
   
-  ESP_LOGVV(TAG, "Debug point 001");
   this->publish_state_(this->cell_count_real_sensor_, (float) cell_count_real);
   // cell_voltage_min/max and cell_resistance_min/max still hold their sentinel
   // defaults (100.0f/-100.0f, 1000.0f/-1000.0f) if no cell in this frame reported
@@ -422,7 +417,6 @@ void JkRS485Bms::decode_jk02_cell_info_(const std::vector<uint8_t> &data) {
     this->publish_state_(this->cell_resistance_max_cell_number_sensor_, NAN);
     this->publish_state_(this->cell_resistance_min_cell_number_sensor_, NAN);
   }
-  ESP_LOGVV(TAG, "Debug point 002");
 
   //ESP_LOGV(TAG, "Cell MAX voltage:    %f", cell_voltage_max);
   //ESP_LOGV(TAG, "Cell MAX voltage:    %f", cell_voltage_min);
@@ -435,7 +429,6 @@ void JkRS485Bms::decode_jk02_cell_info_(const std::vector<uint8_t> &data) {
   //           0xFF 0xFF 0x00 0x00    16 cells enabled
   //           0xFF 0xFF 0xFF 0x00    24 cells enabled
   //           0xFF 0xFF 0xFF 0xFF    32 cells enabled
-  //ESP_LOGV(TAG, "Enabled cells bitmask: 0x%02X 0x%02X 0x%02X 0x%02X", data[54 + offset], data[55 + offset],data[56 + offset], data[57 + offset]);
 
   // 58    2   0x00 0x0D              cell average voltage  0.001        V
   this->publish_state_(this->cell_average_voltage_sensor_, uint16_to_float(&data[58+offset]) * 0.001f);    // (float) jk_get_16bit(58 + offset) * 0.001f);
@@ -614,14 +607,12 @@ void JkRS485Bms::decode_jk02_cell_info_(const std::vector<uint8_t> &data) {
   // 140 [166=140+26]  1   0x00                   Balancing action                   0x00: Off
   //                                                                                 0x01: Charging balancer
   //                                                                                 0x02: Discharging balancer
-  // this->publish_state_(this->balancing_binary_sensor_, (data[140 + offset] != 0x00));
   this->publish_state_(this->balancing_direction_sensor_, (data[140 + offset]));
   if (data[140 + offset] == 1 or data[140 + offset] == 2) {
     this->publish_state_(this->status_balancing_binary_sensor_, (bool) 1);
   } else {
     this->publish_state_(this->status_balancing_binary_sensor_, (bool) 0);
   }
-  // ESP_LOGI(TAG, "BALANCER WORKING STATUS 140:  0x%02X", data[140 + offset]);
 
   // 141 [167=141+26]  1   0x54                   Battery capacity state of charge in   1.0           %
   float soc = (float) data[141 + offset];
@@ -696,27 +687,22 @@ void JkRS485Bms::decode_jk02_cell_info_(const std::vector<uint8_t> &data) {
 
   // 186 [212=186+26]                            212.TimeEmergency  (s)         Emergency switch time
   temp_param_value = uint16_to_float(&data[186+offset]);    //jk_get_16bit(186 + offset);
-  // ESP_LOGI(TAG, "  Emergency switch: %s", (raw_emergency_time_countdown > 0) ? "on" : "off");
   this->publish_state_(this->emergency_time_countdown_sensor_, temp_param_value);
 
 
   // 187   2   0x00 0xD5              Unknown187
   // 189   2   0x02 0x00              Unknown189
-  //ESP_LOGD(TAG, "Unknown189: 0x%02X 0x%02X", data[189], data[190]);
   // 190   1   0x00                   Unknown190
   // 191   1   0x00                   Balancer status (working: 0x01, idle: 0x00)
   
   // 193   2   0x00 0xAE              Unknown193
-  //ESP_LOGD(TAG, "Unknown193: 0x%02X 0x%02X (0x00 0x8D)", data[193 + offset], data[194 + offset]);
   // 195   2   0xD6 0x3B              Unknown195
-  //ESP_LOGD(TAG, "Unknown195: 0x%02X 0x%02X (0x21 0x40)", data[195 + offset], data[196 + offset]);
   // 197   10  0x40 0x00 0x00 0x00 0x00 0x58 0xAA 0xFD 0xFF 0x00
 
                       
   
   // 202 [228=202+26]                          228.Battery Voltage       0.01         V   (repeated. More precision at 118)
   //battery_voltage = (float) jk_get_32bit(202 + offset) * 0.01f;
-  //ESP_LOGI(TAG, " BATTERY VOLTAGE 228: %f", battery_voltage);
 
   // 204 [230=204+26]    2   0x01 0xFD         230.Heating current         0.001         A
   this->publish_state_(this->heating_current_sensor_, int16_to_float(&data[204+offset])  * 0.001f);
@@ -780,8 +766,6 @@ void JkRS485Bms::decode_jk02_cell_info_(const std::vector<uint8_t> &data) {
   // this->publish_state_(this->battery_total_runtime_sensor_, (float) jk_get_32bit(286));
   // this->publish_state_(this->total_runtime_formatted_text_sensor_, format_total_runtime_(jk_get_32bit(286)));
 
-  // ESP_LOGI(TAG, "RUNTIME SENSOR:          %f", (float) jk_get_32bit(286));
-  // ESP_LOGI(TAG, "RUNTIME SENSOR FORMATED: %s", this->total_runtime_formatted_text_sensor_);
   //  299   1   0xCD                   CHECKSUM
 
   if (frame_version == FRAME_VERSION_JK02_32S) {
@@ -848,7 +832,6 @@ void JkRS485Bms::decode_jk02_settings_(const std::vector<uint8_t> &data) {
 
   // 22 [16]   4   0x68 0x10 0x00 0x00    Cell OVP Recovery
   temp_param_value = uint32_to_float(&data[22]) * 0.001f; 
-  //ESP_LOGI(TAG, "  Cell OVPR: %f V", temp_param_value); /// (float) jk_get_32bit(22) * 0.001f);
 
   // 26 [20]   4   0x0A 0x00 0x00 0x00    Balance trigger voltage
   temp_param_value = uint32_to_float(&data[26]) * 0.001f; 
@@ -933,34 +916,27 @@ void JkRS485Bms::decode_jk02_settings_(const std::vector<uint8_t> &data) {
 
   // 98 [92]   4   0x38 0xFF 0xFF 0xFF    Charge UTP                          TMPBatCUT        Charging Low Temperature Protection
   temp_param_value=int32_to_float(&data[98])*0.1f;
-  //ESP_LOGI(TAG, "  Charge UTP: %f °C", temp_param_value);
 
   // 102 [96]   4   0x9C 0xFF 0xFF 0xFF    Charge UTP Recovery                 TMPBatCUTPR      Charging Low Temperature Protection Recovery
   temp_param_value=int32_to_float(&data[102])*0.1f;
-  //ESP_LOGI(TAG, "  Charge UTP recovery: %f °C", temp_param_value);
 
   // 106 [100]  4   0x84 0x03 0x00 0x00    MOS OTP                             TMPMosOT         MOS Overtemperature Protection
   temp_param_value=int32_to_float(&data[106])*0.1f;
-  //ESP_LOGI(TAG, "  MOS OTP: %f °C", temp_param_value);
   // powertube_temperature_protection_sensor_ is a read-only mirror of the same
   // value (kept as a plain sensor, e.g. for HA history graphing) - see issue #51.
   this->publish_state_(this->powertube_temperature_protection_sensor_, temp_param_value);
 
   // 110 [104]   4   0xBC 0x02 0x00 0x00    MOS OTP Recovery
   temp_param_value=int32_to_float(&data[110])*0.1f;
-  //ESP_LOGI(TAG, "  MOS OTP recovery: %f °C", temp_param_value);
   this->publish_state_(this->powertube_temperature_protection_recovery_sensor_, temp_param_value);
 
   // 114 [108]  4   0x0D 0x00 0x00 0x00    cell count settings
   temp_param_value=uint32_to_float(&data[114]);  
-  //ESP_LOGI(TAG, "  cell count settings: %f", temp_param_value); ///(float) jk_get_32bit(114));
   this->cell_count_settings_value_ = temp_param_value;  // internal only, no HA entity
 
   // 118 [112]  4   0x01 0x00 0x00 0x00    Charge switch BatChargeEN
-  //  ESP_LOGI(TAG, "  Charge switch: %s", ((bool) data[118]) ? "on" : "off");
 
   // 122 [116]  4   0x01 0x00 0x00 0x00    Discharge switch
-  // ESP_LOGI(TAG, "  Discharge switch: %s", ((bool) data[122]) ? "on" : "off");
 
   // 126 [120 = 0x78]  4   0x01 0x00 0x00 0x00    Balancer switch
   ESP_LOGI(TAG, "  Balancer switch: %s", ((bool) data[126]) ? "on" : "off");
@@ -968,25 +944,18 @@ void JkRS485Bms::decode_jk02_settings_(const std::vector<uint8_t> &data) {
   // 02.10.10.78.00.02.04.00.00.00.01.F6.69.
 
   // 130 [124]  4   0x88 0x13 0x00 0x00    Nominal battery capacity CapBatCell  [Nominal_Capacity] (CellInfo)
-  // ESP_LOGI(TAG, "  Nominal battery capacity: %f Ah", (float) jk_get_32bit(130) * 0.001f);
   // this->publish_state_(this->battery_capacity_total_setting_sensor_, (float) jk_get_32bit(130) * 0.001f);
 
   // 134 [128] 4   0xDC 0x05 0x00 0x00    SCP DELAY (us)
-  // ESP_LOGI(TAG, "  SCP DELAY: %f us", (float) jk_get_32bit(134) * 0.001f);
   temp_param_value=uint32_to_float(&data[134])*0.001f;   
 
   // 138 [132]  4   0xE4 0x0C 0x00 0x00    Start balance voltage
-  // ESP_LOGI(TAG, "  Start balance voltage: %f V", (float) jk_get_32bit(138) * 0.001f);
   temp_param_value=uint32_to_float(&data[138])*0.001f;     
 
   // 142   4   0x00 0x00 0x00 0x00
-  // ESP_LOGI(TAG, "         142: %02X%02X%02X%02X",data[142],data[143],data[144],data[145]);
   // 146   4   0x00 0x00 0x00 0x00
-  // ESP_LOGI(TAG, "         146: %02X%02X%02X%02X",data[146],data[147],data[148],data[149]);
   // 150   4   0x00 0x00 0x00 0x00
-  // ESP_LOGI(TAG, "         150: %02X%02X%02X%02X",data[150],data[151],data[152],data[153]);
   // 154   4   0x00 0x00 0x00 0x00
-  // ESP_LOGI(TAG, "         154: %02X%02X%02X%02X",data[154],data[155],data[156],data[157]);
   // 158   4   0x00 0x00 0x00 0x00    Con. wire resistance 1
   // 162   4   0x00 0x00 0x00 0x00    Con. wire resistance 2
   // 166   4   0x00 0x00 0x00 0x00    Con. wire resistance 3
@@ -1011,24 +980,14 @@ void JkRS485Bms::decode_jk02_settings_(const std::vector<uint8_t> &data) {
   // 242   4   0x00 0x00 0x00 0x00    Con. wire resistance 22
   // 246   4   0x00 0x00 0x00 0x00    Con. wire resistance 23
   // 250   4   0x00 0x00 0x00 0x00    Con. wire resistance 24
-  // for (uint8_t i = 0; i < 24; i++) {
-  //  ESP_LOGV(TAG, "  Con. wire resistance %d: %f Ohm", i + 1, (float) jk_get_32bit(i * 4 + 158) * 0.001f);
-  //}
 
   // 254   4   0x00 0x00 0x00 0x00
-  // ESP_LOGI(TAG, "         254: %02X%02X%02X%02X",data[254],data[255],data[256],data[257]);
   // 258   4   0x00 0x00 0x00 0x00
-  // ESP_LOGI(TAG, "         258: %02X%02X%02X%02X",data[258],data[259],data[260],data[261]);
   // 262   4   0x00 0x00 0x00 0x00
-  // ESP_LOGI(TAG, "         262: %02X%02X%02X%02X",data[262],data[263],data[264],data[265]);
   // 266   4   0x00 0x00 0x00 0x00
-  // ESP_LOGI(TAG, "         266: %02X%02X%02X%02X",data[266],data[267],data[268],data[269]);
   // 270 [264]   4   0x00 0x00 0x00 0x00 (USED BY SNIFFER)
-  // ESP_LOGI(TAG, "  Device address: 0x%02X", data[270]);
-  // ESP_LOGI(TAG, "         270: %02X%02X%02X%02X",data[270],data[271],data[272],data[273]);
   
   // 274 [268]  4   0x00 0x00 0x00 0x00    TIMProdischarge: Discharge pre-charging time
-  // ESP_LOGI(TAG, "         274: %02X%02X%02X%02X",data[274],data[275],data[276],data[277]);
   temp_param_value=uint32_to_float(&data[274]);   
   ESP_LOGI(TAG, "  Precharging time from discharged: %f s", temp_param_value); ///(float) ((int32_t) jk_get_32bit(274)));
 
@@ -1050,9 +1009,7 @@ void JkRS485Bms::decode_jk02_settings_(const std::vector<uint8_t> &data) {
 
   // 284   2   0X00 0X00
   // 286   4   0x00 0x00 0x00 0x00
-  // ESP_LOGI(TAG, "  TIMSmartSleep: %d H", (uint8_t) (data[286]));
   this->publish_state_(this->smart_sleep_time_sensor_, (uint8_t) (data[286]));
-//  ESP_LOGI(TAG, "  Data field enable control 0: %d", (uint8_t) (data[287]));
   
 
   // 290   4   0x00 0x00 0x00 0x00
@@ -1139,31 +1096,6 @@ void JkRS485Bms::decode_device_info_(const std::vector<uint8_t> &data) {
   // 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
   // 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
   // 0x65
-
-  //ESP_LOGV(TAG, "  Vendor ID: %s", std::string(data.begin() + 6, data.begin() + 6 + 16).c_str());
-  //ESP_LOGV(TAG, "  Hardware version: %s", std::string(data.begin() + 22, data.begin() + 22 + 8).c_str());
-  //ESP_LOGV(TAG, "  Software version: %s", std::string(data.begin() + 30, data.begin() + 30 + 8).c_str());
-  //ESP_LOGV(TAG, "  Uptime: %f s", uint32_to_float(&data[38]));
-  //ESP_LOGV(TAG, "  Power on count: %f", uint32_to_float(&data[42]));
-  //ESP_LOGV(TAG, "  Device name: %s", std::string(data.begin() + 46, data.begin() + 46 + 16).c_str());
-  //ESP_LOGV(TAG, "  Device passcode: %s", std::string(data.begin() + 62, data.begin() + 62 + 16).c_str());
-  //ESP_LOGV(TAG, "  Manufacturing date: %s", std::string(data.begin() + 78, data.begin() + 78 + 8).c_str());
-  //ESP_LOGV(TAG, "  Serial number: %s", std::string(data.begin() + 86, data.begin() + 86 + 11).c_str());
-  //ESP_LOGV(TAG, "  Passcode: %s", std::string(data.begin() + 97, data.begin() + 97 + 5).c_str());
-  //ESP_LOGV(TAG, "  User data: %s", std::string(data.begin() + 102, data.begin() + 102 + 16).c_str());
-  //ESP_LOGV(TAG, "  Setup passcode: %s", std::string(data.begin() + 118, data.begin() + 118 + 16).c_str());
-
-  //ESP_LOGV(TAG, "  UART1 Protocol Number:     0x%02X", ((uint8_t) data[178]));
-  //ESP_LOGV(TAG, "  CAN   Protocol Number:     0x%02X", ((uint8_t) data[179]));  
-  //ESP_LOGV(TAG, "  UART2 Protocol Number:     0x%02X", ((uint8_t) data[212]));
-  //ESP_LOGV(TAG, "  UART2 Protocol Enabled[0]: 0x%02X", ((uint8_t) data[213]));
-
-  //ESP_LOGV(TAG, "  RCV Time: %f h", (float) ((uint8_t) data[266]) * 0.1f);
-  //ESP_LOGV(TAG, "  RFV Time: %f h", (float) ((uint8_t) data[267]) * 0.1f);
-  //ESP_LOGV(TAG, "  CAN Protocol Library Version: %f", (float) ((uint8_t) data[268]));
-  //ESP_LOGV(TAG, "  RVD: %f", (float) ((uint8_t) data[269]));
-  //ESP_LOGV(TAG, "  ---------------------------------------");
-
 
   this->publish_state_(this->info_vendorid_text_sensor_, std::string(data.begin() + 6, data.begin() + 6 + 16).c_str());
   this->publish_state_(this->info_hardware_version_text_sensor_, std::string(data.begin() + 22, data.begin() + 22 + 8).c_str());
@@ -1343,23 +1275,10 @@ void JkRS485Bms::publish_state_(binary_sensor::BinarySensor *binary_sensor, cons
   binary_sensor->publish_state(state);
 }
 
-//void JkRS485Bms::publish_state_(sensor::Sensor *sensor, float value) {
-//  if (sensor == nullptr)
-//    return;
-//
-//  sensor->publish_state(value);
-//}
-
-
-
 void JkRS485Bms::publish_state_(sensor::Sensor *sensor, float value) {
-  ESP_LOGVV(TAG, "Debug point 100 (--> %f)", value);
   if (sensor == nullptr) {
-    ESP_LOGVV("JkRS485Bms", "sensor is Null.");
     return;
   }
-
-  ESP_LOGVV(TAG, "Debug point 101 (--> %f)", value);
 
   // NaN is the deliberate "unavailable" sentinel used throughout this component
   // (see publish_device_unavailable_()) and must reach sensor->publish_state()
@@ -1368,25 +1287,11 @@ void JkRS485Bms::publish_state_(sensor::Sensor *sensor, float value) {
   // sensors froze at their last real value instead of going "unavailable".
   // Infinity is never an intentional value in this component, so still reject it.
   if (std::isinf(value)) {
-    ESP_LOGW("JkRS485Bms", "Sensor value is infinite, not publishing.");
+    ESP_LOGW(TAG, "Sensor value is infinite, not publishing.");
     return;
   }
-  ESP_LOGVV(TAG, "Debug point 102 (--> %f)", value);
   sensor->publish_state(value);
-
-
-
-  //ESP_LOGD(TAG, "  --------------------------------------- TRYING     0x%02X ", reinterpret_cast<uintptr_t>(sensor));
-  //sensor->publish_state(value);
-  ////ESP_LOGD("JkRS485Bms", "Publicación exitosa para el sensor: %s", sensor->get_name().c_str());
-  //ESP_LOGD("JkRS485Bms", "Publicación exitosa para el sensor");
 }
-
-
-//bool JkRS485Bms::write_register(uint8_t address, uint32_t value, uint8_t length) {
-//  trigger_bms2sniffer_event("KK", 0x00);
-//  return(true);
-//}
 
 void JkRS485Bms::publish_state_(text_sensor::TextSensor *text_sensor, const std::string &state) {
   if (text_sensor == nullptr){

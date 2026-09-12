@@ -17,26 +17,6 @@ DEPENDENCIES = ["jk_rs485_bms"]
 
 CODEOWNERS = ["@syssi","@txubelaxu"]
 
-CONF_CHARGING_SWITCH = (
-    "charging_switch"  # @DEPRECATED and superseded by switch.charging
-)
-CONF_DISCHARGING_SWITCH = (
-    "discharging_switch"  # @DEPRECATED and superseded by switch.discharging
-)
-#CONF_PRECHARGING = "precharging"
-CONF_PRECHARGING_SWITCH = "precharging_switch"
-#CONF_BALANCING = "balancing"
-CONF_BALANCING_SWITCH = "balancing_switch"
-CONF_DEDICATED_CHARGER_SWITCH = "dedicated_charger_switch"
-CONF_DISPLAY_ALWAYS_ON_SWITCH = "status_online"
-
-ICON_PRECHARGING = "mdi:battery-charging"
-ICON_PRECHARGING_SWITCH = "mdi:battery-charging"
-ICON_CHARGING_SWITCH = "mdi:battery-charging"
-ICON_DISCHARGING_SWITCH = "mdi:power-plug"
-ICON_BALANCING = "mdi:battery-heart-variant"
-ICON_BALANCING_SWITCH = "mdi:battery-heart-variant"
-ICON_DEDICATED_CHARGER_SWITCH = "mdi:battery-charging"
 ICON_CHARGING = "mdi:battery-charging"
 ICON_DISCHARGING = "mdi:power-plug"
 ICON_BALANCING = "mdi:battery-heart-variant"

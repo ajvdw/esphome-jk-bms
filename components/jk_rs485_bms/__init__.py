@@ -38,5 +38,4 @@ async def to_code(config):
     await jk_rs485_sniffer.register_jk_rs485_bms_device(var, config)      #registro de SNIFFER_DEVICE
     cg.add(var.set_address(config[CONF_RS485_ADDRESS]))                   #JK_RS485_BMS --> address
     hub = await cg.get_variable(config[CONF_JK_RS485_SNIFFER_ID])
-    #cg.add(getattr(hub, f"set_bms")(var))
     cg.add(var.set_sniffer_parent(hub))    

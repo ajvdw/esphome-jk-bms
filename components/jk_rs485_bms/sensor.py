@@ -174,10 +174,6 @@ CONF_CHARGING_LOW_TEMPERATURE_RECOVERY = "charging_low_temperature_recovery"
 CONF_DISCHARGING_LOW_TEMPERATURE_PROTECTION = "discharging_low_temperature_protection"
 CONF_DISCHARGING_LOW_TEMPERATURE_RECOVERY = "discharging_low_temperature_recovery"
 
-# r/w
-# CONF_BATTERY_STRINGS = "battery_strings"
-
-
 CONF_BALANCING_DIRECTION = "balancing_direction"
 CONF_CURRENT_CALIBRATION = "current_calibration"
 CONF_DEVICE_ADDRESS = "device_address"

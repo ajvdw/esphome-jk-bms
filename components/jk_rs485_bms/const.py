@@ -7,25 +7,7 @@ CONF_STATUS_DISCHARGING = "status_discharging"
 CONF_STATUS_HEATING = "status_heating"
 
 
-CONF_BALANCING = "balancing"
-CONF_PRECHARGING = "precharging"
-CONF_CHARGING = "charging"
-CONF_DISCHARGING = "discharging"
-CONF_HEATING = "heating"
-CONF_GPS_HEARTBEAT ="gps_heartbeat"
-CONF_PORT_SELECTION = "port_selection"
-CONF_SPECIAL_CHARGER = "special_charger"
-
-
-CONF_CHARGING_FLOAT_MODE = "charging_float_mode"
-CONF_TIMED_STORE_DATA = "timed_stored_data"
-CONF_EMERGENCY = "emergency"
-CONF_DISABLE_TEMPERATURE_SENSORS = "disable_temperature_sensors"
-CONF_DISPLAY_ALWAYS_ON = "display_always_on"
-CONF_SMART_SLEEP_ON = "smart_sleep_on"
 CONF_SMART_SLEEP_TIME = "smart_sleep_time"
-CONF_TIMED_STORED_DATA = "timed_stored_data"
-CONF_DISABLE_PCL_MODULE = "disable_pcl_module"
 
 CONF_ALARM_WIRERES = "alarm_wireres"
 CONF_ALARM_MOSOTP = "alarm_mosotp"
