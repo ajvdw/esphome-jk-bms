@@ -1,7 +1,7 @@
 #pragma once
 
-// #include "../jkrs485_bms/switch/jk_switch.h"
-// #include "../jkrs485_bms/number/jk_number.h"
+#include "number/jk_number.h"
+#include "switch/jk_switch.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/components/sensor/sensor.h"
 #include "esphome/components/text_sensor/text_sensor.h"
