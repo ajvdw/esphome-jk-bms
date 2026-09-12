@@ -7,7 +7,7 @@ monitor your new JK-PBx BMSs via internal RS485 network using 1 only ESP.
 ## References
 * https://www.youtube.com/@OffGridGarageAustralia
 * https://github.com/syssi/esphome-jk-bms
-* https://secondlifestorage.com/index.php?threads/jk-b1a24s-jk-b2a24s-active-balancer.9591/
+* https://github.com/txubelaxu/esphome-jk-bms
 * https://github.com/jblance/jkbms
 * https://github.com/jblance/mpp-solar/issues/112
 * https://github.com/jblance/mpp-solar/blob/master/mppsolar/protocols/jk232.py
