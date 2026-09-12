@@ -27,8 +27,6 @@ class JkRS485Sniffer : public uart::UARTDevice, public output::TalkPin, public C
   JkRS485Sniffer() = default;
 
 
-  void set_broadcast_changes_to_all_bms(bool state);
-
   void set_talk_pin(GPIOPin *pin) { talk_pin_ = pin; }
   void set_talk_pin_needed(bool talk_pin_needed) { talk_pin_needed_= talk_pin_needed;}
 
@@ -85,13 +83,6 @@ class JkRS485Sniffer : public uart::UARTDevice, public output::TalkPin, public C
 
   void handle_bms2sniffer_event(std::uint8_t slave_address, std::string event, std::uint8_t frame_type);
 
-/*
-  void handle_bms2sniffer_switch_or_number_uint32_event(std::uint8_t slave_address, std::uint8_t third_element_of_frame, std::uint16_t register_address, std::uint32_t value);
-  void handle_bms2sniffer_switch_or_number_int32_event(std::uint8_t slave_address, std::uint8_t third_element_of_frame, std::uint16_t register_address, std::int32_t value);
-  void send_command_switch_or_number_to_slave_uint32(std::uint8_t slave_address, std::uint8_t third_element_of_frame, std::uint16_t register_address, std::uint32_t value);
-  void send_command_switch_or_number_to_slave_int32(std::uint8_t slave_address, std::uint8_t third_element_of_frame, std::uint16_t register_address, std::int32_t value);
-*/
-
  protected:
   ProtocolVersion protocol_version_{PROTOCOL_VERSION_JK02_32S};
   
@@ -127,7 +118,6 @@ class JkRS485Sniffer : public uart::UARTDevice, public output::TalkPin, public C
 
   std::vector<uint8_t> rx_buffer_;
   uint16_t rx_timeout_{50};
-  bool broadcast_changes_to_all_bms_{false};
   uint32_t last_jk_rs485_network_activity_{0};
   uint32_t last_jk_rs485_pooling_trial_{0};
   uint32_t rx_short_checksum_fail_{0};
