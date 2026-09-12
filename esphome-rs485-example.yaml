@@ -13,7 +13,7 @@ esphome:
   name: $name
   friendly_name: jkbms
   project:
-    name: "txubelaxu.esphome-jk-bms"
+    name: "ajvdw.esphome-jk-bms"
     version: 1.0.0
   devices:
     - id: bms_device_0
