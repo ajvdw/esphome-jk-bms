@@ -385,6 +385,8 @@ void JkRS485Bms::decode_jk02_cell_info_(const std::vector<uint8_t> &data) {
 
   this->publish_state_(this->battery_capacity_remaining_sensor_, int32_to_float(&data[142+offset]) * 0.001f);
 
+  this->publish_state_(this->battery_capacity_setting_sensor_, int32_to_float(&data[146+offset]) * 0.001f);
+
   this->publish_state_(this->charging_cycles_sensor_, uint32_to_float(&data[150+offset]));
 
   this->publish_state_(this->battery_capacity_total_charging_cycle_sensor_, uint32_to_float(&data[154+offset])*0.001f);
@@ -672,6 +674,7 @@ void JkRS485Bms::publish_device_unavailable_() {
   this->publish_state_(battery_power_sensor_, NAN);
   this->publish_state_(battery_power_charging_sensor_, NAN);
   this->publish_state_(battery_power_discharging_sensor_, NAN);
+  this->publish_state_(battery_capacity_setting_sensor_, NAN);
   this->publish_state_(battery_capacity_remaining_sensor_, NAN);
   this->publish_state_(battery_capacity_remaining_derived_sensor_, NAN);
   this->publish_state_(temperature_sensors_sensor_, NAN);
