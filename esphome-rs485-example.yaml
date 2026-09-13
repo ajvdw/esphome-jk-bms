@@ -63,7 +63,7 @@ jk_rs485_sniffer:
     protocol_version: "JK02_32S"
     rx_timeout: 500ms
     uart_id: uart_0
-    talk_pin: ${fc_pin}
+ #   talk_pin: ${fc_pin}
     
 
 jk_rs485_bms:
@@ -93,6 +93,9 @@ sensor:
     jk_rs485_bms_id: bms0
     balancing_direction:
       name: "balancing direction"
+      device_id: bms_device_0
+    battery_capacity_setting:
+      name: "battery capacity setting"
       device_id: bms_device_0
     cell_voltage_min:
       name: "cell voltage min"
@@ -323,6 +326,9 @@ sensor:
     balancing_direction:
       name: "balancing direction"
       device_id: bms_device_1
+    battery_capacity_setting:
+      name: "battery capacity setting"
+      device_id: bms_device_1
     cell_voltage_min:
       name: "cell voltage min"
       device_id: bms_device_1
@@ -546,4 +552,41 @@ sensor:
       name: "cell overvoltage protection release time"
       device_id: bms_device_1
 
-    
+text_sensor:
+  - platform: jk_rs485_bms
+    jk_rs485_bms_id: bms0
+    errors:
+      name: "bms errors"
+      device_id: bms_device_0
+  - platform: jk_rs485_bms
+    jk_rs485_bms_id: bms1
+    errors:
+      name: "bms errors"
+      device_id: bms_device_1
+      
+binary_sensor:
+  - platform: jk_rs485_bms
+    jk_rs485_bms_id: bms0
+    status_charging:
+      name: "status charging"
+      device_id: bms_device_0
+    status_discharging:
+      name: "status discharging"
+      device_id: bms_device_0
+    status_balancing:
+      name: "status balancing"
+      device_id: bms_device_0
+      
+  - platform: jk_rs485_bms
+    jk_rs485_bms_id: bms1
+    status_charging:
+      name: "status charging"
+      device_id: bms_device_1
+    status_discharging:
+      name: "status discharging"
+      device_id: bms_device_1
+    status_balancing:
+      name: "status balancing"
+      device_id: bms_device_1
+
+      
