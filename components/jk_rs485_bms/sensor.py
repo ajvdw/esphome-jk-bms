@@ -127,6 +127,7 @@ CONF_BATTERY_CURRENT = "battery_current"
 CONF_BATTERY_POWER = "battery_power"
 CONF_BATTERY_POWER_CHARGING = "battery_power_charging"
 CONF_BATTERY_POWER_DISCHARGING = "battery_power_discharging"
+CONF_BATTERY_CAPACITY_SETTING = "battery_capacity_setting"
 CONF_BATTERY_CAPACITY_REMAINING = "battery_capacity_remaining"
 CONF_BATTERY_CAPACITY_REMAINING_DERIVED = "battery_capacity_remaining_derived"
 CONF_CHARGING_CYCLES = "charging_cycles"
@@ -206,6 +207,7 @@ ICON_CELL_VOLTAGE_MIN_CELL_NUMBER = "mdi:battery-minus-outline"
 ICON_CELL_VOLTAGE_MAX_CELL_NUMBER = "mdi:battery-plus-outline"
 
 ICON_BATTERY_STRINGS = "mdi:car-battery"
+ICON_BATTERY_CAPACITY_SETTING = "mdi:battery-50"
 ICON_BATTERY_CAPACITY_REMAINING = "mdi:battery-50"
 ICON_BATTERY_CAPACITY_REMAINING_DERIVED = "mdi:battery-50"
 ICON_ACTUAL_BATTERY_CAPACITY = "mdi:battery-50"
@@ -329,6 +331,7 @@ SENSORS = [
     CONF_BATTERY_POWER,
     CONF_BATTERY_POWER_CHARGING,
     CONF_BATTERY_POWER_DISCHARGING,
+    CONF_BATTERY_CAPACITY_SETTING,
     CONF_BATTERY_CAPACITY_REMAINING,
     CONF_BATTERY_CAPACITY_REMAINING_DERIVED,
     CONF_TEMPERATURE_SENSORS,
@@ -1000,6 +1003,13 @@ CONFIG_SCHEMA = JK_RS485_BMS_COMPONENT_SCHEMA.extend(
             icon=ICON_EMPTY,
             accuracy_decimals=2,
             device_class=DEVICE_CLASS_POWER,
+            state_class=STATE_CLASS_MEASUREMENT,
+        ),
+        cv.Optional(CONF_BATTERY_CAPACITY_SETTING): sensor.sensor_schema(
+            unit_of_measurement=UNIT_AMPERE_HOURS,
+            icon=ICON_BATTERY_CAPACITY_SETTING,
+            accuracy_decimals=3,
+            device_class=DEVICE_CLASS_EMPTY,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
         cv.Optional(CONF_BATTERY_CAPACITY_REMAINING): sensor.sensor_schema(
