@@ -378,7 +378,7 @@ SENSORS = [
     CONF_CELL_OVERVOLTAGE_PROTECTION_RELEASE_TIME,
 ]
 
-# pylint: disable=too-many-function-args
+                                        
 CONFIG_SCHEMA = JK_RS485_BMS_COMPONENT_SCHEMA.extend(
     {
         cv.Optional(CONF_BALANCING_DIRECTION): sensor.sensor_schema(

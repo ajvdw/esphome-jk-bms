@@ -17,20 +17,14 @@ namespace output {
 
 class TalkPin {
  public:
-  /// Set the inversion state of this binary output.
+
   void set_inverted(bool inverted) { this->inverted_ = inverted; }
 
 #ifdef USE_POWER_SUPPLY
-  /** Use this to connect up a power supply to this output.
-   *
-   * Whenever this output is enabled, the power supply will automatically be turned on.
-   *
-   * @param power_supply The PowerSupplyComponent, set this to nullptr to disable the power supply.
-   */
+
   void set_power_supply(power_supply::PowerSupply *power_supply) { this->power_.set_parent(power_supply); }
 #endif
 
-  /// Enable or disable this binary output.
   virtual void set_state(bool state) {
     if (state) {
       this->turn_on();
@@ -39,7 +33,6 @@ class TalkPin {
     }
   }
 
-  /// Enable this binary output.
   virtual void turn_on() {
 #ifdef USE_POWER_SUPPLY
     this->power_.request();
@@ -47,7 +40,6 @@ class TalkPin {
     this->write_state(!this->inverted_);
   }
 
-  /// Disable this binary output.
   virtual void turn_off() {
 #ifdef USE_POWER_SUPPLY
     this->power_.unrequest();
@@ -55,9 +47,6 @@ class TalkPin {
     this->write_state(this->inverted_);
   }
 
-  // ========== INTERNAL METHODS ==========
-  // (In most use cases you won't need these)
-  /// Return whether this binary output is inverted.
   bool is_inverted() const { return this->inverted_; }
 
  protected:
@@ -69,5 +58,5 @@ class TalkPin {
 #endif
 };
 
-}  // namespace output
-}  // namespace esphome
+}
+}

@@ -7,10 +7,7 @@
 #include "esphome/components/uart/uart.h"
 #include "talk_pin.h"
 
-
-
 namespace esphome {
-
 
 namespace jk_rs485_sniffer {
 
@@ -25,7 +22,6 @@ class JkRS485SnifferDevice;
 class JkRS485Sniffer : public uart::UARTDevice, public output::TalkPin, public Component {
  public:
   JkRS485Sniffer() = default;
-
 
   void set_talk_pin(GPIOPin *pin) { talk_pin_ = pin; }
   void set_talk_pin_needed(bool talk_pin_needed) { talk_pin_needed_= talk_pin_needed;}
@@ -47,8 +43,8 @@ class JkRS485Sniffer : public uart::UARTDevice, public output::TalkPin, public C
         rs485_network_node[cont].last_device_info_request_received_OK=0;
         rs485_network_node[cont].counter_cell_info_received=0;
         rs485_network_node[cont].counter_device_settings_received=0;
-        rs485_network_node[cont].counter_device_info_received=0;  
-    }    
+        rs485_network_node[cont].counter_device_info_received=0;
+    }
     last_master_activity=0;
     last_message_received_acting_as_master=0;
     last_network_scan=0;
@@ -66,8 +62,6 @@ class JkRS485Sniffer : public uart::UARTDevice, public output::TalkPin, public C
     }
     nodes_available.push_back('\0');
 
-    // Reserve upfront so filling rx_buffer_ at runtime doesn't repeatedly
-    // reallocate/copy as it grows towards its cap.
     this->rx_buffer_.reserve(RX_BUFFER_MAX_SIZE);
   }
 
@@ -85,12 +79,11 @@ class JkRS485Sniffer : public uart::UARTDevice, public output::TalkPin, public C
 
  protected:
   ProtocolVersion protocol_version_{PROTOCOL_VERSION_JK02_32S};
-  
+
   bool act_as_master;
   uint32_t last_master_activity;
   uint32_t last_message_received_acting_as_master;
   uint32_t last_network_scan;
-
 
   uint8_t manage_rx_buffer_(void);
   void set_node_availability(uint8_t address,bool value);
@@ -98,22 +91,12 @@ class JkRS485Sniffer : public uart::UARTDevice, public output::TalkPin, public C
 
   void detected_master_activity_now(void);
   void send_request_to_slave(uint8_t node_address, uint8_t frame_type);
-  
+
   bool calculate_next_pooling(void);
-  // Shared by all three scan orders in calculate_next_pooling(): decides
-  // whether `node` is due for a request and, if so, sets pooling_index.frame_type
-  // (priority: device info > device settings > cell info). Returns whether
-  // anything was due.
+
   bool decide_next_frame_type(uint8_t node, uint32_t now);
   int found_next_node_to_discover(void);
 
-  // Practical cap on rx_buffer_ growth (see loop()). std::vector::max_size()
-  // is the allocator/address-space limit, effectively unbounded in practice,
-  // so it can't serve as a growth cap. This is a real ceiling: comfortably
-  // more than one full response frame (JKPB_RS485_RESPONSE_SIZE = 308 bytes,
-  // defined in the .cpp) plus resync slack, but small enough to bound
-  // worst-case memory use if the RS485 line feeds continuous noise that
-  // never forms a recognized frame.
   static constexpr size_t RX_BUFFER_MAX_SIZE = 4 * 308;
 
   std::vector<uint8_t> rx_buffer_;
@@ -125,12 +108,8 @@ class JkRS485Sniffer : public uart::UARTDevice, public output::TalkPin, public C
   uint32_t rx_response_checksum_fail_{0};
   uint32_t rx_preamble_drop_{0};
   uint32_t rx_frames_ok_{0};
-  std::vector<JkRS485SnifferDevice *> devices_;  
+  std::vector<JkRS485SnifferDevice *> devices_;
 
-  // talk_pin_ is only meaningful when talk_pin_needed_ is true (real codegen
-  // path always calls set_talk_pin_needed() before setup()/loop(), see
-  // __init__.py). Guarded here too so this stays safe even if something ever
-  // calls write_state() before that, or constructs this class outside codegen.
   void write_state(bool state) override {
     if (this->talk_pin_needed_ && this->talk_pin_ != nullptr) {
       this->talk_pin_->digital_write(state);
@@ -148,10 +127,10 @@ class JkRS485Sniffer : public uart::UARTDevice, public output::TalkPin, public C
      uint32_t last_cell_info_request_received_OK;
      uint16_t counter_cell_info_received;
      uint16_t counter_device_settings_received;
-     uint16_t counter_device_info_received;      
+     uint16_t counter_device_info_received;
   };
   struct struct_rs485_network_node rs485_network_node[16];
-  
+
   std::string nodes_available;
   uint8_t nodes_available_number;
 
@@ -175,5 +154,5 @@ class JkRS485SnifferDevice {
   JkRS485Sniffer *parent_{nullptr};
 };
 
-}  // namespace jk_rs485_sniffer
-}  // namespace esphome
+}
+}
