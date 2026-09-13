@@ -813,5 +813,5 @@ class JkRS485Bms : public PollingComponent, public jk_rs485_sniffer::JkRS485Snif
 
 };
 
-}  // namespace jk_rs485_bms
-}  // namespace esphome
+}
+}
