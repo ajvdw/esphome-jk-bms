@@ -3,6 +3,7 @@
 ESPHome components to monitor Jikong Battery Management Systems (JK-BMS) via RS-485
 monitor your new JK-PBx BMSs via internal RS485 network using 1 only ESP.
 
+![Visualized in Home Assistant](https://raw.githubusercontent.com/ajvdw/esphome-jk-bms/refs/heads/main/images/ha-bms.png)
 
 ## References
 * https://www.youtube.com/@OffGridGarageAustralia
