@@ -41,6 +41,7 @@ enum RxParseResult : uint8_t {
   RX_CHECKSUM_FAIL = 6,
 };
 
+/*
 static const char *rx_result_to_string(uint8_t value) {
   switch (value) {
     case RX_NO_DATA:
@@ -60,6 +61,7 @@ static const char *rx_result_to_string(uint8_t value) {
     default:
       return "unknown";
   }
+*/      
 }
 
 std::vector<unsigned char> pattern_response_header = {0x55, 0xAA, 0xEB, 0x90};
@@ -562,8 +564,8 @@ uint8_t JkRS485Sniffer::manage_rx_buffer_(void) {
 
     if (computed_checksum != remote_checksum) {
       this->rx_response_checksum_fail_++;
-      ESP_LOGW(TAG, "CHECKSUM failed! 0x%02X != 0x%02X (resp_fail=%u)", computed_checksum,
-               remote_checksum, this->rx_response_checksum_fail_);
+      ESP_LOGW(TAG, "CHECKSUM failed!" );
+        // 0x%02X != 0x%02X (resp_fail=%u)", computed_checksum, remote_checksum, this->rx_response_checksum_fail_);
 
       auto it_next = std::search(this->rx_buffer_.begin() + 1, this->rx_buffer_.end(),
                                  pattern_response_header.begin(), pattern_response_header.end());
