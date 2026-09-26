@@ -41,7 +41,6 @@ enum RxParseResult : uint8_t {
   RX_CHECKSUM_FAIL = 6,
 };
 
-/*
 static const char *rx_result_to_string(uint8_t value) {
   switch (value) {
     case RX_NO_DATA:
@@ -60,8 +59,7 @@ static const char *rx_result_to_string(uint8_t value) {
       return "checksum_fail";
     default:
       return "unknown";
-  }
-*/      
+  }   
 }
 
 std::vector<unsigned char> pattern_response_header = {0x55, 0xAA, 0xEB, 0x90};
