@@ -564,8 +564,7 @@ uint8_t JkRS485Sniffer::manage_rx_buffer_(void) {
 
     if (computed_checksum != remote_checksum) {
       this->rx_response_checksum_fail_++;
-      ESP_LOGW(TAG, "CHECKSUM failed!" );
-        // 0x%02X != 0x%02X (resp_fail=%u)", computed_checksum, remote_checksum, this->rx_response_checksum_fail_);
+      ESP_LOGW(TAG, "CHECKSUM failed! 0x%02X != 0x%02X (resp_fail=%u)", (int)computed_checksum, (int)remote_checksum, (unsigned int)this->rx_response_checksum_fail_);
 
       auto it_next = std::search(this->rx_buffer_.begin() + 1, this->rx_buffer_.end(),
                                  pattern_response_header.begin(), pattern_response_header.end());
