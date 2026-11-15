@@ -540,6 +540,9 @@ class JkRS485Bms : public PollingComponent, public jk_rs485_sniffer::JkRS485Snif
   void set_balancing_current_sensor(sensor::Sensor *balancing_current_sensor) {
     balancing_current_sensor_ = balancing_current_sensor;
   }
+  void set_heating_current_sensor(sensor::Sensor *heating_current_sensor) {
+    heating_current_sensor_ = heating_current_sensor;
+  }
 
   void dump_config() override;
   void setup() override;
