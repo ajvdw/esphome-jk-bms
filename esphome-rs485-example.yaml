@@ -40,7 +40,6 @@ logger:
   tx_buffer_size: 2048
 ota:
   platform: esphome
-  password: !secret ota_password      # https://esphome.io/guides/security_best_practices/#using-secretsyaml
 
 wifi:
   ssid: !secret wifi_ssid
@@ -97,6 +96,9 @@ sensor:
     battery_capacity_setting:
       name: "battery capacity setting"
       device_id: bms_device_0
+#    heating_current:
+#      name: "heating current"
+#      device_id: bms_device_0
     cell_voltage_min:
       name: "cell voltage min"
       device_id: bms_device_0
@@ -246,7 +248,6 @@ sensor:
       device_id: bms_device_0
     temperature_sensor_3:
       name: "temperature sensor 3"
-      device_id: bms_device_0
     temperature_sensor_4:
       name: "temperature sensor 4"
       device_id: bms_device_0
@@ -255,6 +256,8 @@ sensor:
       device_id: bms_device_0
     temperature_powertube:
       name: "temperature powertube"
+      filters:
+       - round: 0   
       device_id: bms_device_0
     battery_capacity_state_of_charge:
       name: "battery capacity state of charge"
@@ -329,6 +332,9 @@ sensor:
     battery_capacity_setting:
       name: "battery capacity setting"
       device_id: bms_device_1
+#    heating_current:
+#      name: "heating current"
+#      device_id: bms_device_1      
     cell_voltage_min:
       name: "cell voltage min"
       device_id: bms_device_1
@@ -487,6 +493,8 @@ sensor:
       device_id: bms_device_1
     temperature_powertube:
       name: "temperature powertube"
+      filters:
+       - round: 0
       device_id: bms_device_1
     battery_capacity_state_of_charge:
       name: "battery capacity state of charge"
@@ -563,6 +571,7 @@ text_sensor:
     errors:
       name: "bms errors"
       device_id: bms_device_1
+
       
 binary_sensor:
   - platform: jk_rs485_bms
@@ -576,7 +585,9 @@ binary_sensor:
     status_balancing:
       name: "status balancing"
       device_id: bms_device_0
-      
+    status_heating:
+      name: "status_heating"
+      device_id: bms_device_0
   - platform: jk_rs485_bms
     jk_rs485_bms_id: bms1
     status_charging:
@@ -587,6 +598,9 @@ binary_sensor:
       device_id: bms_device_1
     status_balancing:
       name: "status balancing"
+      device_id: bms_device_1
+    status_heating:
+      name: "status_heating"
       device_id: bms_device_1
 
       
