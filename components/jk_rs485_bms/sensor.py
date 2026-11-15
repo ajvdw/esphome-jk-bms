@@ -183,6 +183,8 @@ CONF_ALARM_LOW_VOLUME = "alarm_low_volume"
 CONF_MANUFACTURING_DATE = "manufacturing_date"
 CONF_TOTAL_RUNTIME = "battery_total_runtime"
 CONF_BALANCING_CURRENT = "balancing_current"
+CONF_HEATING_CURRENT = "heating_current"
+
 
 CONF_MAX_DISCHARGING_CURRENT ="max_discharging_current"
 CONF_START_CURRENT_CALIBRATION = "start_current_calibration"
@@ -361,6 +363,7 @@ SENSORS = [
     CONF_MANUFACTURING_DATE,
     CONF_TOTAL_RUNTIME,
     CONF_BALANCING_CURRENT,  
+    CONF_HEATING_CURRENT,  
     CONF_MAX_DISCHARGING_CURRENT,
     CONF_START_CURRENT_CALIBRATION,
     CONF_ACTUAL_BATTERY_CAPACITY,
@@ -1221,6 +1224,13 @@ CONFIG_SCHEMA = JK_RS485_BMS_COMPONENT_SCHEMA.extend(
             state_class=STATE_CLASS_TOTAL_INCREASING,
         ),
         cv.Optional(CONF_BALANCING_CURRENT): sensor.sensor_schema(
+            unit_of_measurement=UNIT_AMPERE,
+            icon=ICON_CURRENT_DC,
+            accuracy_decimals=2,
+            device_class=DEVICE_CLASS_CURRENT,
+            state_class=STATE_CLASS_MEASUREMENT,
+        ),           
+        cv.Optional(CONF_HEATING_CURRENT): sensor.sensor_schema(
             unit_of_measurement=UNIT_AMPERE,
             icon=ICON_CURRENT_DC,
             accuracy_decimals=2,
