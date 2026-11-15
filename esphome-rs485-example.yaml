@@ -248,6 +248,7 @@ sensor:
       device_id: bms_device_0
     temperature_sensor_3:
       name: "temperature sensor 3"
+      device_id: bms_device_0      
     temperature_sensor_4:
       name: "temperature sensor 4"
       device_id: bms_device_0
