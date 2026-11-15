@@ -567,7 +567,7 @@ text_sensor:
       name: "bms errors"
       device_id: bms_device_0
     charge_status:
-      name: "bms charge status"
+      name: "bms charging status"
       device_id: bms_device_0
   - platform: jk_rs485_bms
     jk_rs485_bms_id: bms1
@@ -575,7 +575,7 @@ text_sensor:
       name: "bms errors"
       device_id: bms_device_1
     charge_status:
-      name: "bms charge status"
+      name: "bms charging status"
       device_id: bms_device_1
 
       
