@@ -11,6 +11,7 @@ CODEOWNERS = ["@syssi","@txubelaxu"]
 
 CONF_BATTERY_TYPE = "battery_type"
 CONF_ERRORS = "errors"
+CONF_CHARGE_STATUS = "charge_status"
 CONF_OPERATION_STATUS = "operation_status"
 CONF_DEVICE_TYPE = "device_type"
 CONF_SOFTWARE_VERSION = "software_version"
@@ -28,6 +29,7 @@ CONF_INFO_DEVICE_SETUP_PASSCODE = "info_device_setup_passcode";
 
 ICON_BATTERY_TYPE = "mdi:car-battery"
 ICON_ERRORS = "mdi:alert-circle-outline"
+ICON_CHARGE_STATUS = "mdi:battery-clock"
 ICON_OPERATION_MODE = "mdi:heart-pulse"
 ICON_PASSWORD = "mdi:lock-outline"
 ICON_NETWORK = "mdi:lan"
@@ -37,6 +39,7 @@ ICON_INFORMATION = "mdi:information"
 TEXT_SENSORS = [
     CONF_OPERATION_STATUS,
     CONF_ERRORS,
+    CONF_CHARGE_STATUS,
     CONF_BATTERY_TYPE,
     CONF_PASSWORD,
     CONF_DEVICE_TYPE,
@@ -58,6 +61,7 @@ CONFIG_SCHEMA = JK_RS485_BMS_COMPONENT_SCHEMA.extend(
     {
         cv.Optional(CONF_OPERATION_STATUS): text_sensor.text_sensor_schema(icon=ICON_OPERATION_MODE),
         cv.Optional(CONF_ERRORS): text_sensor.text_sensor_schema(icon=ICON_ERRORS),
+        cv.Optional(CONF_CHARGE_STATUS): text_sensor.text_sensor_schema(icon=ICON_CHARGE_STATUS),
         cv.Optional(CONF_BATTERY_TYPE): text_sensor.text_sensor_schema(icon=ICON_BATTERY_TYPE),
         cv.Optional(CONF_PASSWORD): text_sensor.text_sensor_schema(icon=ICON_PASSWORD),
         cv.Optional(CONF_DEVICE_TYPE): text_sensor.text_sensor_schema(icon=ICON_EMPTY),

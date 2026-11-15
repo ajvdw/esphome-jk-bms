@@ -490,6 +490,9 @@ class JkRS485Bms : public PollingComponent, public jk_rs485_sniffer::JkRS485Snif
   void set_operation_status_text_sensor(text_sensor::TextSensor *operation_status_text_sensor) {
     operation_status_text_sensor_ = operation_status_text_sensor;
   }
+  void set_charge_status_text_sensor(text_sensor::TextSensor *charge_status_text_sensor) {
+    charge_status_text_sensor_ = charge_status_text_sensor;
+  }
 
   void set_info_vendorid_text_sensor(text_sensor::TextSensor *info_vendorid_text_sensor) {
     info_vendorid_text_sensor_ = info_vendorid_text_sensor;
@@ -607,6 +610,7 @@ class JkRS485Bms : public PollingComponent, public jk_rs485_sniffer::JkRS485Snif
   void decode_device_info_(const std::vector<uint8_t> &data);
 
   std::string error_bits_to_string_(uint32_t bitmask);
+  std::string charge_status_id_to_string_(uint8_t status);
   std::string mode_bits_to_string_(uint16_t bitmask);
 
   float get_temperature_(const uint16_t value) {
@@ -663,6 +667,7 @@ class JkRS485Bms : public PollingComponent, public jk_rs485_sniffer::JkRS485Snif
     text_sensor::TextSensor *network_nodes_available_text_sensor_;
     text_sensor::TextSensor *errors_text_sensor_;
     text_sensor::TextSensor *operation_status_text_sensor_;
+    text_sensor::TextSensor *charge_status_text_sensor_{nullptr};
     text_sensor::TextSensor *total_runtime_formatted_text_sensor_;
     text_sensor::TextSensor *info_vendorid_text_sensor_;
     text_sensor::TextSensor *info_hardware_version_text_sensor_;
