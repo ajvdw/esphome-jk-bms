@@ -759,7 +759,7 @@ std::string JkRS485Bms::charge_status_id_to_string_(const uint8_t status) {
     case 0x02:
       return "Float";
     default:
-      return "Unknown (0x" + format_hex(status) + ")";
+      return "Unknown (0x" + format_hex_pretty(status) + ")";
   }
 }
 
