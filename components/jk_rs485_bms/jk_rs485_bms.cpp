@@ -188,7 +188,7 @@ void JkRS485Bms::on_jk_rs485_sniffer_data(const uint8_t &origin_address, const u
     }
 
   } else {
-    ESP_LOGD(TAG, "This BMS address is: %d  and address received %d ==> IDLE", this->address_, origin_address);
+    ESP_LOGI(TAG, "This BMS address is: %d  and address received %d ==> IDLE", this->address_, origin_address);
   }
 }
 
