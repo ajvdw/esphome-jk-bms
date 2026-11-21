@@ -171,14 +171,14 @@ void JkRS485Bms::on_jk_rs485_sniffer_data(const uint8_t &origin_address, const u
       const uint32_t now = millis();
       const bool settings_fresh = (now - this->last_settings_ms_) <= ONLINE_DATA_MAX_AGE_MS;
       const bool cellinfo_fresh = (now - this->last_cellinfo_ms_) <= ONLINE_DATA_MAX_AGE_MS;
-  ESP_LOGI(TAG, "===== [BMS 0x%02X] ONLINE GATE | settings=%d cellinfo=%d voltage=%d soc=%d fresh_s=%d fresh_c=%d =====",
+      /* *ESP_LOGI(TAG, "===== [BMS 0x%02X] ONLINE GATE | settings=%d cellinfo=%d voltage=%d soc=%d fresh_s=%d fresh_c=%d =====",
            this->address_,
            (int) this->settings_ok_,
            (int) this->cellinfo_ok_,
            (int) this->voltage_ok_,
            (int) this->soc_ok_,
            (int) settings_fresh,
-           (int) cellinfo_fresh);
+           (int) cellinfo_fresh); */
       if (this->settings_ok_ && this->cellinfo_ok_ && this->voltage_ok_ && this->soc_ok_ && settings_fresh &&
           cellinfo_fresh) {
         this->reset_status_online_tracker_();
@@ -593,12 +593,12 @@ void JkRS485Bms::track_status_online_() {
 void JkRS485Bms::reset_status_online_tracker_() {
   this->no_response_count_ = 0;
   this->offline_published_ = false;
-  ESP_LOGI(TAG, "===== [BMS 0x%02X] OFFLINE -> ONLINE | V=%f SOC=%f cells_real=%f cells_cfg=%f =====",
+  /*  ESP_LOGI(TAG, "===== [BMS 0x%02X] OFFLINE -> ONLINE | V=%f SOC=%f cells_real=%f cells_cfg=%f =====",
            this->address_,
            this->battery_voltage_sensor_ ? this->battery_voltage_sensor_->state : NAN,
            this->battery_capacity_state_of_charge_sensor_ ? this->battery_capacity_state_of_charge_sensor_->state : NAN,
            this->cell_count_real_sensor_ ? this->cell_count_real_sensor_->state : NAN,
-           this->cell_count_settings_value_);
+           this->cell_count_settings_value_); */
   this->publish_state_(this->status_online_binary_sensor_, true);
 }
 
