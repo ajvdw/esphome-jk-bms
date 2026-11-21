@@ -132,7 +132,7 @@ void JkRS485Bms::on_jk_rs485_sniffer_data(const uint8_t &origin_address, const u
     this->last_response_ms_ = millis();
     this->offline_published_ = false;
 
-    ESP_LOGD(TAG, "This BMS address is: %d  and address received %d ==> WORKING (frame type:%d)",
+    ESP_LOGI(TAG, "This BMS address is: %d  and address received %d ==> WORKING (frame type:%d)",
              this->address_, origin_address, frame_type);
     switch (frame_type) {
       case 0x01:
