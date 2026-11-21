@@ -87,6 +87,14 @@ class JkRS485Sniffer : public uart::UARTDevice, public output::TalkPin, public C
 
   uint8_t manage_rx_buffer_(void);
   void set_node_availability(uint8_t address,bool value);
+
+  // A slave only answers requests addressed to it, so the address of the request a response belongs to is the
+  // origin of that response. The address embedded in the response frame is only used when no matching request
+  // was seen (it turned out not to be reliable for all frame types).
+  void remember_request_(uint8_t address, uint8_t frame_type);
+  int16_t last_request_address_{-1};
+  uint8_t last_request_frame_type_{0};
+  uint32_t last_request_ms_{0};
   std::string nodes_available_to_string();
 
   void detected_master_activity_now(void);
