@@ -160,7 +160,7 @@ void JkRS485Bms::on_jk_rs485_sniffer_data(const uint8_t &origin_address, const u
         break;
       default:
         ESP_LOGW(TAG, "Unsupported FRAME TYPE (0x%02X)", frame_type);
-        ESP_LOGD(TAG, "  %s", format_hex_pretty(&data.front(), 150).c_str());
+        ESP_LOGD(TAG, "  %s", format_hex_pretty_to(&data.front(), 150).c_str());
     }
 
     if (frame_type == 0x02) {
@@ -560,8 +560,8 @@ void JkRS485Bms::decode_device_info_(const std::vector<uint8_t> &data) {
   }
 
   ESP_LOGI(TAG, "Device info frame (%d bytes) received", data.size());
-  ESP_LOGVV(TAG, "  %s", format_hex_pretty(&data.front(), 160).c_str());
-  ESP_LOGVV(TAG, "  %s", format_hex_pretty(&data.front() + 160, data.size() - 160).c_str());
+  ESP_LOGVV(TAG, "  %s", format_hex_pretty_to(&data.front(), 160).c_str());
+  ESP_LOGVV(TAG, "  %s", format_hex_pretty_to(&data.front() + 160, data.size() - 160).c_str());
 
   this->publish_state_(this->info_vendorid_text_sensor_, std::string(data.begin() + 6, data.begin() + 6 + 16).c_str());
   this->publish_state_(this->info_hardware_version_text_sensor_, std::string(data.begin() + 22, data.begin() + 22 + 8).c_str());
