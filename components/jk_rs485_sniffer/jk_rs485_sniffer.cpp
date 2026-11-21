@@ -16,6 +16,9 @@ static const uint16_t JKPB_RS485_FRAME_COUNTER_ADDRESS = 5;
 static const uint16_t JKPB_RS485_CHECKSUM_INDEX = 299;
 static const uint16_t JKPB_RS485_ADDRESS_OF_RS485_ADDRESS = 300;
 
+// Maximum time between a live data frame and the settings frame of the same BMS that follows it
+static const uint32_t MAX_DELAY_LIVE_FRAME_TO_SETTINGS_FRAME_MILLISECONDS = 600;
+
 // Maximum time between a request and the response that belongs to it
 static const uint32_t MAX_RESPONSE_DELAY_AFTER_REQUEST_MILLISECONDS = 1000;
 
@@ -104,6 +107,55 @@ uint16_t chksum(const uint8_t data[], const uint16_t len) {
     checksum = checksum + data[i];
   }
   return checksum;
+}
+
+bool JkRS485Sniffer::accept_response_(uint8_t address, uint8_t frame_type, const std::vector<uint8_t> &data,
+                                      uint32_t now) {
+  if (address <= 15) {
+    this->rs485_network_node[address].last_message_received = now;
+  }
+  if (address == 0) {
+    last_master_activity = now;
+  } else if (address > 15) {
+    ESP_LOGW(TAG, "Response type 0x%02X DROPPED: address 0x%02X is out of range (max 15)", frame_type, address);
+    return false;
+  } else {
+    this->set_node_availability(address, 1);
+  }
+
+  this->rx_frames_ok_++;
+  ESP_LOGD(TAG, "Frame received from SLAVE (type: 0x%02X, %d bytes) %02X address", frame_type, (int) data.size(), address);
+  ESP_LOGVV(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
+
+  bool found = false;
+  for (auto *device : this->devices_) {
+    device->on_jk_rs485_sniffer_data(address, frame_type, data, this->nodes_available);
+    found = true;
+  }
+
+  if (!found) {
+    ESP_LOGW(TAG, "Got JkRS485 but no recipients to send [frame type:0x%02X] 0x%02X!", frame_type, address);
+  }
+  return true;
+}
+
+void JkRS485Sniffer::resolve_pending_live_frame_(int16_t address_of_following_settings_frame, uint32_t now) {
+  if (!this->pending_live_frame_.valid) {
+    return;
+  }
+  this->pending_live_frame_.valid = false;
+
+  uint8_t address = this->pending_live_frame_.address_in_frame;
+  if (address_of_following_settings_frame >= 0 &&
+      (now - this->pending_live_frame_.received_ms) <= MAX_DELAY_LIVE_FRAME_TO_SETTINGS_FRAME_MILLISECONDS) {
+    if (address != (uint8_t) address_of_following_settings_frame) {
+      ESP_LOGI(TAG, "Live data frame (type 0x02) re-attributed from address 0x%02X to 0x%02X: the settings frame that follows it is from 0x%02X",
+               address, (uint8_t) address_of_following_settings_frame, (uint8_t) address_of_following_settings_frame);
+    }
+    address = (uint8_t) address_of_following_settings_frame;
+  }
+  this->accept_response_(address, 0x02, this->pending_live_frame_.data, now);
+  this->pending_live_frame_.data.clear();
 }
 
 void JkRS485Sniffer::remember_request_(uint8_t address, uint8_t frame_type) {
@@ -286,6 +338,11 @@ int JkRS485Sniffer::found_next_node_to_discover(void){
 
 void JkRS485Sniffer::loop() {
   uint32_t now = millis();
+
+  if (this->pending_live_frame_.valid &&
+      (now - this->pending_live_frame_.received_ms) > MAX_DELAY_LIVE_FRAME_TO_SETTINGS_FRAME_MILLISECONDS) {
+    this->resolve_pending_live_frame_(-1, now);  // no settings frame followed
+  }
 
   if (this->rx_buffer_.size()>=RX_BUFFER_MAX_SIZE){
     ESP_LOGW(TAG, "### Buffer cleared buffer size: %d",this->rx_buffer_.size());
@@ -605,6 +662,7 @@ uint8_t JkRS485Sniffer::manage_rx_buffer_(void) {
     // The request this response answers tells which slave it comes from. This is more reliable than the
     // address embedded in the frame, which is not correct for every frame type (e.g. live data of a second BMS
     // arrived as address 0 and was decoded into the first BMS).
+    bool address_from_request = false;
     const uint8_t address_in_frame = address;
     const int16_t request_address_seen = this->last_request_address_;
     const uint8_t request_type_seen = this->last_request_frame_type_;
@@ -619,6 +677,7 @@ uint8_t JkRS485Sniffer::manage_rx_buffer_(void) {
                    (uint8_t) this->last_request_address_);
         }
         address = (uint8_t) this->last_request_address_;
+        address_from_request = true;
       } else {
         ESP_LOGD(TAG, "Frame type 0x%02X does not match the last request (type 0x%02X, %u ms ago): using address in frame 0x%02X",
                  raw[JKPB_RS485_FRAME_TYPE_ADDRESS], this->last_request_frame_type_,
@@ -628,6 +687,11 @@ uint8_t JkRS485Sniffer::manage_rx_buffer_(void) {
     }
 
     // One line per valid response: shows what arrives on the bus and which address is used for it
+    char voltage_text[24] = "";
+    if (raw[JKPB_RS485_FRAME_TYPE_ADDRESS] == 2) {
+      const uint32_t raw_voltage = raw[150] | (raw[151] << 8) | (raw[152] << 16) | ((uint32_t) raw[153] << 24);
+      snprintf(voltage_text, sizeof(voltage_text), " | pack %.2f V", raw_voltage * 0.001f);
+    }
     char request_text[48];
     if (request_address_seen >= 0) {
       snprintf(request_text, sizeof(request_text), "to 0x%02X, type 0x%02X, %u ms ago", (unsigned int) request_address_seen,
@@ -635,40 +699,33 @@ uint8_t JkRS485Sniffer::manage_rx_buffer_(void) {
     } else {
       snprintf(request_text, sizeof(request_text), "none seen");
     }
-    ESP_LOGI(TAG, "RX response type 0x%02X | address in frame: 0x%02X (byte 270: 0x%02X, byte 300: 0x%02X) | last request: %s | origin used: 0x%02X",
+    ESP_LOGI(TAG, "RX response type 0x%02X | address in frame: 0x%02X (byte 270: 0x%02X, byte 300: 0x%02X) | last request: %s | origin used: 0x%02X%s",
              raw[JKPB_RS485_FRAME_TYPE_ADDRESS], address_in_frame,
              raw[JKPB_RS485_FRAME_TYPE_ADDRESS_FOR_FRAME_TYPE_x01 + 6], raw[JKPB_RS485_ADDRESS_OF_RS485_ADDRESS],
-             request_text, address);
+             request_text, address, voltage_text);
 
-    if (address <= 15) {
-      this->rs485_network_node[address].last_message_received = now;
+    const uint8_t frame_type = raw[JKPB_RS485_FRAME_TYPE_ADDRESS];
+
+    // A frame waiting for its settings frame is resolved first (frame order on the bus is kept)
+    this->resolve_pending_live_frame_(frame_type == 1 ? (int16_t) address : (int16_t) -1, now);
+
+    std::vector<uint8_t> data(this->rx_buffer_.begin(), this->rx_buffer_.begin() + response_size);
+
+    if (frame_type == 2 && address_in_frame != 0 && !this->live_frame_address_is_reliable_) {
+      this->live_frame_address_is_reliable_ = true;
+      ESP_LOGI(TAG, "Live data frames carry a sender address (0x%02X): not pairing them with settings frames", address_in_frame);
     }
-    if (address == 0) {
-      last_master_activity = now;
-    } else if (address > 15) {
-      ESP_LOGW(TAG, "Response type 0x%02X DROPPED: address 0x%02X is out of range (max 15), buffer of %d bytes cleared",
-               raw[JKPB_RS485_FRAME_TYPE_ADDRESS], address, (int) this->rx_buffer_.size());
+
+    if (frame_type == 2 && !address_from_request && !this->live_frame_address_is_reliable_) {
+      // The address of a live data frame can't be trusted: hold it until the settings frame that follows
+      this->pending_live_frame_.valid = true;
+      this->pending_live_frame_.data = std::move(data);
+      this->pending_live_frame_.address_in_frame = address;
+      this->pending_live_frame_.received_ms = now;
+    } else if (!this->accept_response_(address, frame_type, data, now)) {
       this->rx_buffer_.clear();
       result = RX_PARSED_RESPONSE;
       return true;
-    } else {
-      this->set_node_availability(address, 1);
-    }
-
-    std::vector<uint8_t> data(this->rx_buffer_.begin(), this->rx_buffer_.begin() + response_size);
-    this->rx_frames_ok_++;
-    ESP_LOGD(TAG, "Frame received from SLAVE (type: 0x%02X, %d bytes) %02X address", raw[4], data.size(), address);
-    ESP_LOGVV(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
-
-    bool found = false;
-    for (auto *device : this->devices_) {
-      device->on_jk_rs485_sniffer_data(address, raw[JKPB_RS485_FRAME_TYPE_ADDRESS], data, this->nodes_available);
-      found = true;
-    }
-
-    if (!found) {
-      ESP_LOGW(TAG, "Got JkRS485 but no recipients to send [frame type:0x%02X] 0x%02X!",
-               raw[JKPB_RS485_FRAME_TYPE_ADDRESS], address);
     }
 
     erase_prefix(response_size);
