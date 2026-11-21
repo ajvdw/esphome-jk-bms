@@ -5,6 +5,44 @@ monitor your new JK-PBx BMSs via internal RS485 network using 1 only ESP.
 
 ![Visualized in Home Assistant](https://github.com/ajvdw/wifi-jk-bms/blob/main/media/screenshot_bms.png?raw=true)
 
+## Multiple BMSs as sub-devices
+ 
+Each BMS can be shown as its own device in Home Assistant. Declare the sub-devices in the `esphome:` block and set
+`device_id` **once on the BMS**. All sensors, binary sensors and text sensors of that BMS are placed on this device
+automatically, so `device_id` doesn't have to be repeated per entity:
+ 
+```yaml
+esphome:
+  devices:
+    - id: bms_device_0
+      name: BMS-right
+      relation: child      # or: via
+    - id: bms_device_1
+      name: BMS-left
+      relation: child
+ 
+jk_rs485_bms:
+  - id: bms0
+    device_id: bms_device_0
+    rs485_address: 0x00
+    jk_rs485_sniffer_id: sniffer0
+  - id: bms1
+    device_id: bms_device_1
+    rs485_address: 0x01
+    jk_rs485_sniffer_id: sniffer0
+ 
+sensor:
+  - platform: jk_rs485_bms
+    jk_rs485_bms_id: bms1
+    battery_voltage:
+      name: "battery voltage"      # ends up on bms_device_1
+```
+ 
+* `relation` is required on sub-devices since ESPHome 2026.11. Both `via` (a separate physical device reached through
+  this node) and `child` (a logical part of this node) are supported.
+* An entity that sets a `device_id` different from its BMS is rejected, to catch copy/paste mixups between BMSs.
+* Without a `device_id` on the BMS the previous behaviour is kept: `device_id` is set per entity.
+
 ## References
 * https://www.youtube.com/@OffGridGarageAustralia
 * https://github.com/syssi/esphome-jk-bms
