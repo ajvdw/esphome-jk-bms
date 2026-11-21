@@ -526,14 +526,11 @@ void JkRS485Bms::decode_jk02_settings_(const std::vector<uint8_t> &data) {
   temp_param_value=uint32_to_float(&data[114]);
   this->cell_count_settings_value_ = temp_param_value;
 
-  ESP_LOGI(TAG, "  Balancer switch: %s", ((bool) data[126]) ? "on" : "off");
-
+  //ESP_LOGI(TAG, "  Balancer switch: %s", ((bool) data[126]) ? "on" : "off");
   temp_param_value=uint32_to_float(&data[134])*0.001f;
-
   temp_param_value=uint32_to_float(&data[138])*0.001f;
-
   temp_param_value=uint32_to_float(&data[274]);
-  ESP_LOGI(TAG, "  Precharging time from discharged: %f s", temp_param_value);
+  //ESP_LOGI(TAG, "  Precharging time from discharged: %f s", temp_param_value);
 
   this->publish_state_(this->smart_sleep_time_sensor_, (uint8_t) (data[286]));
 
