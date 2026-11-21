@@ -95,6 +95,24 @@ class JkRS485Sniffer : public uart::UARTDevice, public output::TalkPin, public C
   int16_t last_request_address_{-1};
   uint8_t last_request_frame_type_{0};
   uint32_t last_request_ms_{0};
+
+  // On some buses the live data frames (type 0x02) carry no usable sender address (byte 300 is 0 in every frame).
+  // The settings frame (type 0x01) does: its payload holds the configured address of the BMS, and the BMS sends it
+  // right after its live data frame. A live data frame is therefore held back until the next frame arrives and is
+  // credited to the address of that settings frame. Without a settings frame it is dispatched with the address it
+  // carries, after a short timeout.
+  struct PendingLiveFrame {
+    bool valid{false};
+    std::vector<uint8_t> data;
+    uint8_t address_in_frame{0};
+    uint32_t received_ms{0};
+  };
+  PendingLiveFrame pending_live_frame_;
+  // Set as soon as a live data frame carries a non-zero address: the address in live data frames can be trusted
+  // on this bus and the pairing with settings frames is not used.
+  bool live_frame_address_is_reliable_{false};
+  bool accept_response_(uint8_t address, uint8_t frame_type, const std::vector<uint8_t> &data, uint32_t now);
+  void resolve_pending_live_frame_(int16_t address_of_following_settings_frame, uint32_t now);
   std::string nodes_available_to_string();
 
   void detected_master_activity_now(void);
