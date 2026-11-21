@@ -253,11 +253,7 @@ void JkRS485Bms::decode_jk02_cell_info_(const std::vector<uint8_t> &data) {
     }
 
     ESP_LOGD(TAG, "[ADDRESS: %02X]  %02d --> V: %fV",this->address_,i, cell_voltage);
-    if(this->address_==1 && i==2){
-      this->publish_state_(this->cells_[i].cell_voltage_sensor_, cell_voltage);
-    } else {
-      this->publish_state_(this->cells_[i].cell_voltage_sensor_, cell_voltage);
-    }
+    this->publish_state_(this->cells_[i].cell_voltage_sensor_, cell_voltage);
     ESP_LOGD(TAG, "                  --> R: %fohm",cell_resistance);
     this->publish_state_(this->cells_[i].cell_resistance_sensor_, cell_resistance);
 
