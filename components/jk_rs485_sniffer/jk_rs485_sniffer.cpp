@@ -91,7 +91,7 @@ uint16_t chksum(const uint8_t data[], const uint16_t len) {
 
 void JkRS485Sniffer::handle_bms2sniffer_event(std::uint8_t slave_address, std::string event, std::uint8_t frame_type){
 
-  ESP_LOGD(TAG,"Received Event from BMS.. [address:0x%02X] @ %d -->  %s", slave_address, frame_type, event.c_str());
+  ESP_LOGI(TAG,"Received Event from BMS.. [address:0x%02X] @ %d -->  %s", slave_address, frame_type, event.c_str());
   const uint32_t now=millis();
 
   if (slave_address > 15) {
