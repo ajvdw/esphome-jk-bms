@@ -188,7 +188,7 @@ void JkRS485Sniffer::loop() {
 
     do {
         cont_manage++;
-        ESP_LOGV(TAG, "Buffer before number %d:    %s",cont_manage, (this->rx_buffer_.size()).c_str());
+        //ESP_LOGV(TAG, "Buffer before number %d:    %s",cont_manage, (this->rx_buffer_.size()).c_str());
         response=this->manage_rx_buffer_();
         ESP_LOGV(TAG, "Response:            %d (%s)",response, rx_result_to_string(response));
         if (original_buffer_size==rx_buffer_.size()){
