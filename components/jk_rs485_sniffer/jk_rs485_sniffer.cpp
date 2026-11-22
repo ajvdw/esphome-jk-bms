@@ -293,14 +293,14 @@ uint8_t JkRS485Sniffer::manage_rx_buffer_(void) {
     uint16_t remote_checksum = ((uint16_t(raw[6]) << 8) | (uint16_t(raw[7]) << 0));
     if (computed_checksum != remote_checksum) {
       this->rx_short_checksum_fail_++;
-      ESP_LOGV(TAG, "CHECKSUM failed! 0x%04X != 0x%04X (short_fail=%u)", computed_checksum,
+      ESP_LOGI(TAG, "CHECKSUM failed! 0x%04X != 0x%04X (short_fail=%u)", computed_checksum,
                remote_checksum, (unsigned int) this->rx_short_checksum_fail_);
       result = RX_CHECKSUM_FAIL;
       return false;
     }
 
     address = raw[0];
-    ESP_LOGD(TAG, "Answer received for MASTER (type: SHORT REQUEST for address %02X, %d bytes)", address,
+    ESP_LOGI(TAG, "Answer received for MASTER (type: SHORT REQUEST for address %02X, %d bytes)", address,
              (int) (short_size - 1));
     erase_prefix(short_size - 1);
     result = RX_PARSED_SHORT;
@@ -322,7 +322,7 @@ uint8_t JkRS485Sniffer::manage_rx_buffer_(void) {
     uint16_t remote_checksum = ((uint16_t(raw[9]) << 8) | (uint16_t(raw[10]) << 0));
     if (computed_checksum != remote_checksum) {
       this->rx_request_checksum_fail_++;
-      ESP_LOGV(TAG, "CHECKSUM failed! 0x%04X != 0x%04X (req_fail=%u)", computed_checksum,
+      ESP_LOGI(TAG, "CHECKSUM failed! 0x%04X != 0x%04X (req_fail=%u)", computed_checksum,
                remote_checksum, (unsigned int) this->rx_request_checksum_fail_);
       result = RX_CHECKSUM_FAIL;
       return false;
