@@ -111,7 +111,7 @@ bool JkRS485Sniffer::accept_response_(uint8_t address, uint8_t frame_type, const
 
   this->rx_frames_ok_++;
   ESP_LOGD(TAG, "Frame received from SLAVE (type: 0x%02X, %d bytes) %02X address", frame_type, (int) data.size(), address);
-  ESP_LOGVV(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
+ // ESP_LOGVV(TAG, "  %s", format_hex_pretty(&data.front(), data.size()).c_str());
 
   bool found = false;
   for (auto *device : this->devices_) {
