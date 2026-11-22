@@ -99,26 +99,6 @@ static const char *const BATTERY_TYPES[BATTERY_TYPES_SIZE] = {
     "Lithium Titanate",
 };
 
-void JkRS485Bms::set_sniffer_parent(jk_rs485_sniffer::JkRS485Sniffer* parent) {
-    if (parent == nullptr) {
-        ESP_LOGE(TAG, "Trying to set parent to null");
-    } else {
-        ESP_LOGD(TAG, "Setting parent");
-    }
-    this->parent_ = parent;
-}
-
-jk_rs485_sniffer::JkRS485Sniffer* JkRS485Bms::get_sniffer_parent(void){
-    ESP_LOGD(TAG, "Get sniffer parent");
-    return(this->parent_);
-}
-
-void JkRS485Bms::trigger_bms2sniffer_event(std::string event, std::uint8_t frame_type) {
-  if (this->parent_ != nullptr) {
-    this->parent_->handle_bms2sniffer_event(this->address_, event, frame_type);
-  }
-}
-
 void JkRS485Bms::on_jk_rs485_sniffer_data(const uint8_t &origin_address, const uint8_t &frame_type,
                                           const std::vector<uint8_t> &data,
                                           const std::string &nodes_available_received) {
@@ -132,7 +112,7 @@ void JkRS485Bms::on_jk_rs485_sniffer_data(const uint8_t &origin_address, const u
     this->last_response_ms_ = millis();
     this->offline_published_ = false;
 
-    ESP_LOGI(TAG, "This BMS address is: %d  and address received %d ==> WORKING (frame type:%d)",
+    ESP_LOGD(TAG, "This BMS address is: %d  and address received %d ==> WORKING (frame type:%d)",
              this->address_, origin_address, frame_type);
     switch (frame_type) {
       case 0x01:
@@ -188,7 +168,7 @@ void JkRS485Bms::on_jk_rs485_sniffer_data(const uint8_t &origin_address, const u
     }
 
   } else {
-    ESP_LOGI(TAG, "This BMS address is: %d  and address received %d ==> IDLE", this->address_, origin_address);
+    ESP_LOGD(TAG, "This BMS address is: %d  and address received %d ==> IDLE", this->address_, origin_address);
   }
 }
 
@@ -203,11 +183,11 @@ void JkRS485Bms::decode_jk02_cell_info_(const std::vector<uint8_t> &data) {
 
   const size_t min_len = 228 + offset;
   if (data.size() < min_len) {
-    ESP_LOGW(TAG, "Cell info frame too short (%d bytes, need >= %d) - ignoring", data.size(), min_len);
+    ESP_LOGW(TAG, "Cell info frame too short (%d bytes, need >= %d) - ignoring", (int) data.size(), (int) min_len);
     return;
   }
 
-  ESP_LOGI(TAG, "Decoding cell info frame.... [ADDRESS: %02X] %d bytes received", this->address_, data.size());
+  ESP_LOGI(TAG, "Decoding cell info frame.... [ADDRESS: %02X] %d bytes received", this->address_, (int) data.size());
 
   float temp_param_value;
 
@@ -217,8 +197,6 @@ void JkRS485Bms::decode_jk02_cell_info_(const std::vector<uint8_t> &data) {
   float cell_resistance_min = 1000.0f;
   float cell_resistance_max = -1000.0f;
   uint8_t cell_count_real = 0;
-  uint8_t cell_voltage_min_cell_number = 0;
-  uint8_t cell_voltage_max_cell_number = 0;
   uint8_t cell_resistance_min_cell_number = 0;
   uint8_t cell_resistance_max_cell_number = 0;
   float cell_voltage;
@@ -447,18 +425,17 @@ void JkRS485Bms::decode_jk02_cell_info_(const std::vector<uint8_t> &data) {
   }
 
   this->status_notification_received_ = true;
-  this->trigger_bms2sniffer_event("WORKING ! #####",02);
 }
 
 void JkRS485Bms::decode_jk02_settings_(const std::vector<uint8_t> &data) {
 
   const size_t min_len = 287;
   if (data.size() < min_len) {
-    ESP_LOGW(TAG, "Settings frame too short (%d bytes, need >= %d) - ignoring", data.size(), min_len);
+    ESP_LOGW(TAG, "Settings frame too short (%d bytes, need >= %d) - ignoring", (int) data.size(), (int) min_len);
     return;
   }
 
-  ESP_LOGI(TAG, "Decoding settings  frame.... [ADDRESS: %02X] %d bytes received", this->address_, data.size());
+  ESP_LOGI(TAG, "Decoding settings  frame.... [ADDRESS: %02X] %d bytes received", this->address_, (int) data.size());
 
   float temp_param_value;
 
@@ -535,7 +512,6 @@ void JkRS485Bms::decode_jk02_settings_(const std::vector<uint8_t> &data) {
   this->cellinfo_ok_ = false;
   this->voltage_ok_ = false;
   this->soc_ok_ = false;
-  this->trigger_bms2sniffer_event("WORKING ! #####",01);
 }
 
 void JkRS485Bms::setup() {
@@ -551,11 +527,11 @@ void JkRS485Bms::decode_device_info_(const std::vector<uint8_t> &data) {
 
   const size_t min_len = 268;
   if (data.size() < min_len) {
-    ESP_LOGW(TAG, "Device info frame too short (%d bytes, need >= %d) - ignoring", data.size(), min_len);
+    ESP_LOGW(TAG, "Device info frame too short (%d bytes, need >= %d) - ignoring", (int) data.size(), (int) min_len);
     return;
   }
 
-  ESP_LOGI(TAG, "Device info frame (%d bytes) received", data.size());
+  ESP_LOGI(TAG, "Device info frame (%d bytes) received", (int) data.size());
   //ESP_LOGVV(TAG, "  %s", format_hex_pretty(&data.front(), 160).c_str());
   //ESP_LOGVV(TAG, "  %s", format_hex_pretty(&data.front() + 160, data.size() - 160).c_str());
 
@@ -570,7 +546,6 @@ void JkRS485Bms::decode_device_info_(const std::vector<uint8_t> &data) {
   this->publish_state_(this->uart1_protocol_number_sensor_, (uint8_t) data[178]);
   this->publish_state_(this->uart2_protocol_number_sensor_, (uint8_t) data[212]);
 
-  this->trigger_bms2sniffer_event("WORKING ! #####",03);
 }
 
 void JkRS485Bms::track_status_online_() {

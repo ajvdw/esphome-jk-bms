@@ -5,7 +5,6 @@
 #include "esphome/core/log.h"
 #include "esphome/core/helpers.h"
 #include "esphome/components/uart/uart.h"
-#include "talk_pin.h"
 
 namespace esphome {
 
@@ -19,46 +18,19 @@ enum ProtocolVersion {
 
 class JkRS485SnifferDevice;
 
-class JkRS485Sniffer : public uart::UARTDevice, public output::TalkPin, public Component {
+class JkRS485Sniffer : public uart::UARTDevice, public Component {
  public:
   JkRS485Sniffer() = default;
 
-  void set_talk_pin(GPIOPin *pin) { talk_pin_ = pin; }
-  void set_talk_pin_needed(bool talk_pin_needed) { talk_pin_needed_= talk_pin_needed;}
-
   void setup() override {
-
-    if (talk_pin_needed_){
-      this->turn_off();
-      this->talk_pin_->setup();
-      this->talk_pin_->digital_write(0);
+    for (uint8_t cont = 0; cont < 16; cont++) {
+      rs485_network_node[cont].available = false;
+      rs485_network_node[cont].last_message_received = 0;
     }
 
-    for (uint8_t cont=0;cont<16;cont++){
-        rs485_network_node[cont].available=0;
-        rs485_network_node[cont].last_message_received=0;
-        rs485_network_node[cont].last_request_sent=0;
-        rs485_network_node[cont].last_device_settings_request_received_OK=0;
-        rs485_network_node[cont].last_cell_info_request_received_OK=0;
-        rs485_network_node[cont].last_device_info_request_received_OK=0;
-        rs485_network_node[cont].counter_cell_info_received=0;
-        rs485_network_node[cont].counter_device_settings_received=0;
-        rs485_network_node[cont].counter_device_info_received=0;
-    }
-    last_master_activity=0;
-    last_message_received_acting_as_master=0;
-    last_network_scan=0;
-
-    act_as_master=false;
-
-    pooling_index.node_address=0x0f;
-    pooling_index.frame_type=2;
-    pooling_index.scan_address=0x01;
-
-    nodes_available_number=0;
     nodes_available.reserve(17);
     for (uint8_t cont = 0; cont < 16; cont++) {
-        nodes_available.push_back('0');
+      nodes_available.push_back('0');
     }
     nodes_available.push_back('\0');
 
@@ -75,15 +47,8 @@ class JkRS485Sniffer : public uart::UARTDevice, public output::TalkPin, public C
 
   void set_rx_timeout(uint16_t rx_timeout) { rx_timeout_ = rx_timeout; }
 
-  void handle_bms2sniffer_event(std::uint8_t slave_address, std::string event, std::uint8_t frame_type);
-
  protected:
   ProtocolVersion protocol_version_{PROTOCOL_VERSION_JK02_32S};
-
-  bool act_as_master;
-  uint32_t last_master_activity;
-  uint32_t last_message_received_acting_as_master;
-  uint32_t last_network_scan;
 
   uint8_t manage_rx_buffer_(void);
   void set_node_availability(uint8_t address,bool value);
@@ -115,20 +80,11 @@ class JkRS485Sniffer : public uart::UARTDevice, public output::TalkPin, public C
   void resolve_pending_live_frame_(int16_t address_of_following_settings_frame, uint32_t now);
   std::string nodes_available_to_string();
 
-  void detected_master_activity_now(void);
-  void send_request_to_slave(uint8_t node_address, uint8_t frame_type);
-
-  bool calculate_next_pooling(void);
-
-  bool decide_next_frame_type(uint8_t node, uint32_t now);
-  int found_next_node_to_discover(void);
-
   static constexpr size_t RX_BUFFER_MAX_SIZE = 4 * 308;
 
   std::vector<uint8_t> rx_buffer_;
   uint16_t rx_timeout_{50};
   uint32_t last_jk_rs485_network_activity_{0};
-  uint32_t last_jk_rs485_pooling_trial_{0};
   uint32_t rx_short_checksum_fail_{0};
   uint32_t rx_request_checksum_fail_{0};
   uint32_t rx_response_checksum_fail_{0};
@@ -136,37 +92,13 @@ class JkRS485Sniffer : public uart::UARTDevice, public output::TalkPin, public C
   uint32_t rx_frames_ok_{0};
   std::vector<JkRS485SnifferDevice *> devices_;
 
-  void write_state(bool state) override {
-    if (this->talk_pin_needed_ && this->talk_pin_ != nullptr) {
-      this->talk_pin_->digital_write(state);
-    }
-  }
-  GPIOPin *talk_pin_{nullptr};
-  bool talk_pin_needed_{false};
-
   struct struct_rs485_network_node {
      bool available;
      uint32_t last_message_received;
-     uint32_t last_request_sent;
-     uint32_t last_device_settings_request_received_OK;
-     uint32_t last_device_info_request_received_OK;
-     uint32_t last_cell_info_request_received_OK;
-     uint16_t counter_cell_info_received;
-     uint16_t counter_device_settings_received;
-     uint16_t counter_device_info_received;
   };
   struct struct_rs485_network_node rs485_network_node[16];
 
   std::string nodes_available;
-  uint8_t nodes_available_number;
-
-  struct struct_pooling_index {
-     uint8_t node_address;
-     uint8_t frame_type;
-     uint8_t scan_address;
-  };
-
-  struct struct_pooling_index pooling_index;
 };
 
 class JkRS485SnifferDevice {

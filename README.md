@@ -54,3 +54,9 @@ sensor:
 * https://github.com/sshoecraft/jktool
 * https://github.com/Louisvdw/dbus-serialbattery/blob/master/etc/dbus-serialbattery/jkbms.py
 * https://blog.ja-ke.tech/2020/02/07/ltt-power-bms-chinese-protocol.html
+
+## Sniffer only
+
+`jk_rs485_sniffer` only listens to the RS485 bus, it never transmits. Configure the `uart:` with an `rx_pin` only
+(no `tx_pin`, no flow control pin). The `talk_pin` option of the sniffer, and the code that made the ESP act as bus
+master and poll the BMSs, have been removed. The BMSs must be polled by a JK master BMS on the bus.
