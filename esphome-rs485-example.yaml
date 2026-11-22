@@ -76,9 +76,6 @@ jk_rs485_bms:
 sensor:
   - platform: uptime
     id: uptime_sec
-  # +--------------------------------------+
-  # | Uptime sensor                        |
-  # +--------------------------------------+
   - platform: uptime
     name: ${esp_name} Uptime Sensor
     id: uptime_sensor
@@ -93,7 +90,6 @@ sensor:
       name: "battery capacity setting"
 #    heating_current:
 #      name: "heating current"
-#      device_id: bms_device_0
     cell_voltage_min:
       name: "cell voltage min"
     cell_voltage_max:
@@ -245,7 +241,6 @@ sensor:
     cell_overvoltage_protection_release_time:    
       name: "cell overvoltage protection release time"
 
-
   - platform: jk_rs485_bms
     jk_rs485_bms_id: bms1
     balancing_direction:
@@ -254,7 +249,6 @@ sensor:
       name: "battery capacity setting"
 #    heating_current:
 #      name: "heating current"
-#      device_id: bms_device_1      
     cell_voltage_min:
       name: "cell voltage min"
     cell_voltage_max:
