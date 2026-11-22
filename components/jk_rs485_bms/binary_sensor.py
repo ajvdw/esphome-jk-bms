@@ -3,7 +3,7 @@ from esphome.components import binary_sensor
 import esphome.config_validation as cv
 from esphome.const import CONF_ID, DEVICE_CLASS_CONNECTIVITY, ENTITY_CATEGORY_DIAGNOSTIC
 
-from . import CONF_JK_RS485_BMS_ID, JK_RS485_BMS_COMPONENT_SCHEMA
+from . import CONF_JK_RS485_BMS_ID, JK_RS485_BMS_COMPONENT_SCHEMA, inherit_hub_device_id
 from .const import (
     CONF_STATUS_ONLINE,CONF_STATUS_PRECHARGING,CONF_STATUS_CHARGING, CONF_STATUS_DISCHARGING, CONF_STATUS_BALANCING, CONF_STATUS_HEATING,
     CONF_ALARM_WIRERES, CONF_ALARM_MOSOTP, CONF_ALARM_CELLQUANTITY, CONF_ALARM_CURSENSORERR, CONF_ALARM_CELLOVP, CONF_ALARM_BATOVP, 
@@ -69,7 +69,9 @@ BINARY_SENSORS = [
     
 ]
 
-CONFIG_SCHEMA = JK_RS485_BMS_COMPONENT_SCHEMA.extend(
+CONFIG_SCHEMA = cv.All(
+    inherit_hub_device_id,
+    JK_RS485_BMS_COMPONENT_SCHEMA.extend(
     {
         cv.Optional(CONF_STATUS_PRECHARGING): binary_sensor.binary_sensor_schema(
             icon=ICON_CHARGING
@@ -181,6 +183,7 @@ CONFIG_SCHEMA = JK_RS485_BMS_COMPONENT_SCHEMA.extend(
             entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
         ),
     }
+    ),
 )
 
 

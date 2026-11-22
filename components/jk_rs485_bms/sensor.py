@@ -25,7 +25,7 @@ from .const import (
     CONF_SMART_SLEEP_TIME
 )
 
-from . import CONF_JK_RS485_BMS_ID, JK_RS485_BMS_COMPONENT_SCHEMA
+from . import CONF_JK_RS485_BMS_ID, JK_RS485_BMS_COMPONENT_SCHEMA, inherit_hub_device_id
 
 DEPENDENCIES = ["jk_rs485_bms"]
 
@@ -385,7 +385,9 @@ SENSORS = [
 ]
 
                                         
-CONFIG_SCHEMA = JK_RS485_BMS_COMPONENT_SCHEMA.extend(
+CONFIG_SCHEMA = cv.All(
+    inherit_hub_device_id,
+    JK_RS485_BMS_COMPONENT_SCHEMA.extend(
     {
         cv.Optional(CONF_BALANCING_DIRECTION): sensor.sensor_schema(
             unit_of_measurement=UNIT_EMPTY,  
@@ -1350,6 +1352,7 @@ CONFIG_SCHEMA = JK_RS485_BMS_COMPONENT_SCHEMA.extend(
             state_class=STATE_CLASS_MEASUREMENT,
         ),        
     }
+    ),
 )
 
 

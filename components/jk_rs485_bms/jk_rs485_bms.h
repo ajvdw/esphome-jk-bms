@@ -31,15 +31,9 @@ class JkRS485Bms : public PollingComponent, public jk_rs485_sniffer::JkRS485Snif
 
   virtual ~JkRS485Bms() = default;
 
-  void set_sniffer_parent(jk_rs485_sniffer::JkRS485Sniffer *parent);
-
-  jk_rs485_sniffer::JkRS485Sniffer* get_sniffer_parent(void);
-
   void set_address(uint8_t address) { address_ = address; }
 
   uint8_t get_address() const { return this->address_; }
-
-  void trigger_bms2sniffer_event(std::string event, std::uint8_t frame_type);
 
   void set_smart_sleep_time_sensor(sensor::Sensor *smart_sleep_time_sensor) {
     smart_sleep_time_sensor_ = smart_sleep_time_sensor;
@@ -555,7 +549,6 @@ class JkRS485Bms : public PollingComponent, public jk_rs485_sniffer::JkRS485Snif
   void update() override;
 
  protected:
-  jk_rs485_sniffer::JkRS485Sniffer *parent_;
   ProtocolVersion protocol_version_{PROTOCOL_VERSION_JK02_32S};
 
   uint8_t address_;

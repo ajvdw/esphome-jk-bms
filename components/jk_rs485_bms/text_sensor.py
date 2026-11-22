@@ -3,7 +3,7 @@ from esphome.components import text_sensor
 import esphome.config_validation as cv
 from esphome.const import CONF_ICON, CONF_ID, CONF_PASSWORD, ICON_EMPTY, ICON_TIMELAPSE
 
-from . import CONF_JK_RS485_BMS_ID, JK_RS485_BMS_COMPONENT_SCHEMA
+from . import CONF_JK_RS485_BMS_ID, JK_RS485_BMS_COMPONENT_SCHEMA, inherit_hub_device_id
 
 DEPENDENCIES = ["jk_rs485_bms"]
 
@@ -57,7 +57,9 @@ TEXT_SENSORS = [
     CONF_INFO_DEVICE_SETUP_PASSCODE, 
 ]
 
-CONFIG_SCHEMA = JK_RS485_BMS_COMPONENT_SCHEMA.extend(
+CONFIG_SCHEMA = cv.All(
+    inherit_hub_device_id,
+    JK_RS485_BMS_COMPONENT_SCHEMA.extend(
     {
         cv.Optional(CONF_OPERATION_STATUS): text_sensor.text_sensor_schema(icon=ICON_OPERATION_MODE),
         cv.Optional(CONF_ERRORS): text_sensor.text_sensor_schema(icon=ICON_ERRORS),
@@ -93,6 +95,7 @@ CONFIG_SCHEMA = JK_RS485_BMS_COMPONENT_SCHEMA.extend(
 
         
     }
+    ),
 )
 
 
