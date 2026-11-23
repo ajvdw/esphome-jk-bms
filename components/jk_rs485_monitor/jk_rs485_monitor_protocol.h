@@ -263,7 +263,7 @@ class ReplyOriginTracker {
   bool exchange_open() const { return this->exchange_open_; }
 
  protected:
-  uint32_t max_reply_delay_ms_{100};
+  uint32_t max_reply_delay_ms_{500};
   bool exchange_open_{false};
   int16_t target_address_{UNKNOWN_ADDRESS};
   uint32_t last_message_end_ms_{0};
