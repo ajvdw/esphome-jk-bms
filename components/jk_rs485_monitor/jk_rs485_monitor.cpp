@@ -286,19 +286,6 @@ void JkRS485Monitor::log_invalid_(const char *what, size_t size) {
 // Messages
 // ---------------------------------------------------------------------------------------------------------------
 
-bool JkRS485Monitor::resolve_origin_(uint32_t start_ms, uint32_t end_ms, uint8_t &origin) {
-  uint32_t delay = 0;
-  if (this->origin_tracker_.on_reply(start_ms, end_ms, origin, delay)) {
-    ESP_LOGD(TAG, "  origin 0x%02X: the reply starts %u ms after the request (limit %u ms)", (unsigned int) origin,
-             (unsigned int) delay, (unsigned int) this->origin_tracker_.get_max_reply_delay_ms());
-    return true;
-  }
-  this->rx_replies_without_origin_++;
-  ESP_LOGW(TAG, "  origin unknown: no request was answered within %u ms (%u ms after the previous message), reply ignored",
-           (unsigned int) this->origin_tracker_.get_max_reply_delay_ms(), (unsigned int) delay);
-  return false;
-}
-
 void JkRS485Monitor::handle_nw_frame_(const NwFrame &frame, size_t size) {
   const uint8_t *data = this->rx_buffer_.data();
   const uint32_t start_ms = this->rx_times_.front();
@@ -329,33 +316,11 @@ void JkRS485Monitor::handle_nw_frame_(const NwFrame &frame, size_t size) {
   ESP_LOGD(TAG, "  NW information=%u bytes, record=0x%08X, end=0x%02X, checksum=0x%08X", (unsigned int) frame.information.size(),
            (unsigned int) frame.record_number, (unsigned int) frame.end_marker, (unsigned int) frame.checksum);
 
-  const uint32_t now = millis();
-  switch (frame.transport) {
-    case NW_TRANSPORT_REQUEST: {
-      // The terminal id says which slave the master is talking to
-      this->note_master_activity_(now);
-      if (frame.terminal_id <= MAX_ADDRESS) {
-        ESP_LOGD(TAG, "  request from the master (0x00) to address 0x%02X", (unsigned int) frame.terminal_id);
-        this->origin_tracker_.on_request((int16_t) frame.terminal_id, end_ms);
-      } else {
-        ESP_LOGD(TAG, "  request with terminal id 0x%08X, that is not an address (0-%u): the replies get no origin",
-                 (unsigned int) frame.terminal_id, (unsigned int) MAX_ADDRESS);
-        this->origin_tracker_.on_request(ReplyOriginTracker::UNKNOWN_ADDRESS, end_ms);
-      }
-      break;
-    }
-    case NW_TRANSPORT_REPLY: {
-      uint8_t origin = 0;
-      if (this->resolve_origin_(start_ms, end_ms, origin)) {
-        this->dispatch_nw_reply_(origin, frame, now);
-      }
-      break;
-    }
-    default:
-      // Not part of a request / reply exchange
-      this->origin_tracker_.close_exchange();
-      break;
+  // A request shows that the master is active
+  if (frame.transport == NW_TRANSPORT_REQUEST) {
+    this->note_master_activity_(millis());
   }
+  this->dispatch_nw_frame_(frame);
 }
 
 void JkRS485Monitor::handle_legacy_request_(size_t size) {
@@ -365,45 +330,49 @@ void JkRS485Monitor::handle_legacy_request_(size_t size) {
 
   this->log_message_("legacy request", data, size, start_ms, end_ms);
   this->rx_legacy_ok_++;
-  ESP_LOGD(TAG, "  legacy request from the master (0x00) to address 0x%02X, function 0x%02X, register 0x%02X%02X",
+  ESP_LOGD(TAG, "  legacy request to address 0x%02X, function 0x%02X, register 0x%02X%02X",
            (unsigned int) data[0], (unsigned int) data[1], (unsigned int) data[2], (unsigned int) data[3]);
 
   this->note_master_activity_(millis());
-  this->origin_tracker_.on_request((int16_t) data[0], end_ms);
 }
 
 void JkRS485Monitor::handle_legacy_acknowledge_(size_t size) {
   const uint8_t *data = this->rx_buffer_.data();
-  const uint32_t start_ms = this->rx_times_.front();
-  const uint32_t end_ms = this->rx_times_[size - 1];
 
-  this->log_message_("legacy acknowledge", data, size, start_ms, end_ms);
+  this->log_message_("legacy acknowledge", data, size, this->rx_times_.front(), this->rx_times_[size - 1]);
   this->rx_legacy_ok_++;
   ESP_LOGD(TAG, "  legacy acknowledge, address in the message 0x%02X, function 0x%02X, register 0x%02X%02X",
            (unsigned int) data[0], (unsigned int) data[1], (unsigned int) data[2], (unsigned int) data[3]);
-
-  uint8_t origin = 0;
-  if (this->resolve_origin_(start_ms, end_ms, origin)) {
-    this->note_slave_activity_(origin, millis());
-  }
 }
 
 void JkRS485Monitor::handle_legacy_reply_(size_t size) {
   const uint8_t *data = this->rx_buffer_.data();
-  const uint32_t start_ms = this->rx_times_.front();
-  const uint32_t end_ms = this->rx_times_[size - 1];
   const uint8_t frame_type = data[LEGACY_REPLY_FRAME_TYPE_INDEX];
 
   char label[48];
   snprintf(label, sizeof(label), "legacy reply, frame type %u (%s)", (unsigned int) frame_type,
            legacy_frame_type_to_string(frame_type));
-  this->log_message_(label, data, size, start_ms, end_ms);
+  this->log_message_(label, data, size, this->rx_times_.front(), this->rx_times_[size - 1]);
   this->rx_legacy_ok_++;
 
-  uint8_t origin = 0;
-  if (this->resolve_origin_(start_ms, end_ms, origin)) {
-    this->dispatch_legacy_reply_(origin, frame_type, std::vector<uint8_t>(data, data + size), millis());
+  // The origin is the pack id, it is defined for the frame types 1 and 2
+  if (!legacy_frame_type_has_pack_id(frame_type)) {
+    this->rx_replies_not_handed_over_++;
+    ESP_LOGW(TAG, "  frame type %u has no pack id, reply not handed over", (unsigned int) frame_type);
+    return;
   }
+  const size_t pack_id_index = legacy_reply_pack_id_index(size);
+  const uint8_t pack_id = data[pack_id_index];
+  if (pack_id > MAX_ADDRESS) {
+    this->rx_replies_not_handed_over_++;
+    ESP_LOGW(TAG, "  pack id 0x%02X (byte %u) is out of range (max %u), reply not handed over", (unsigned int) pack_id,
+             (unsigned int) pack_id_index, (unsigned int) MAX_ADDRESS);
+    return;
+  }
+  ESP_LOGD(TAG, "  pack id 0x%02X (byte %u): origin 0x%02X", (unsigned int) pack_id, (unsigned int) pack_id_index,
+           (unsigned int) pack_id);
+
+  this->dispatch_legacy_reply_(pack_id, frame_type, std::vector<uint8_t>(data, data + size), millis());
 }
 
 void JkRS485Monitor::note_master_activity_(uint32_t now) {
@@ -435,11 +404,9 @@ void JkRS485Monitor::dispatch_legacy_reply_(uint8_t origin, uint8_t frame_type, 
   }
 }
 
-void JkRS485Monitor::dispatch_nw_reply_(uint8_t origin, const NwFrame &frame, uint32_t now) {
-  this->note_slave_activity_(origin, now);
-
+void JkRS485Monitor::dispatch_nw_frame_(const NwFrame &frame) {
   for (auto *device : this->devices_) {
-    device->on_jk_rs485_monitor_nw_frame(origin, frame, this->nodes_available);
+    device->on_jk_rs485_monitor_nw_frame(frame, this->nodes_available);
   }
 }
 
@@ -482,14 +449,13 @@ void JkRS485Monitor::set_node_availability(uint8_t address, bool value) {
 void JkRS485Monitor::dump_config() {
   ESP_LOGCONFIG(TAG, "JkRS485Monitor:");
   ESP_LOGCONFIG(TAG, "  RX timeout: %d ms", this->rx_timeout_);
-  ESP_LOGCONFIG(TAG, "  Reply timeout: %u ms", (unsigned int) this->origin_tracker_.get_max_reply_delay_ms());
   ESP_LOGCONFIG(TAG, "  RX messages: %u", (unsigned int) this->message_counter_);
   ESP_LOGCONFIG(TAG, "  RX NW frames: ok=%u invalid=%u", (unsigned int) this->rx_nw_ok_, (unsigned int) this->rx_nw_invalid_);
   ESP_LOGCONFIG(TAG, "  RX legacy messages: ok=%u invalid=%u", (unsigned int) this->rx_legacy_ok_,
                 (unsigned int) this->rx_legacy_invalid_);
   ESP_LOGCONFIG(TAG, "  RX unknown bytes: %u, incomplete messages: %u", (unsigned int) this->rx_unknown_bytes_,
                 (unsigned int) this->rx_incomplete_);
-  ESP_LOGCONFIG(TAG, "  Replies without known origin: %u", (unsigned int) this->rx_replies_without_origin_);
+  ESP_LOGCONFIG(TAG, "  Replies not handed over (no pack id): %u", (unsigned int) this->rx_replies_not_handed_over_);
 }
 
 float JkRS485Monitor::get_setup_priority() const { return setup_priority::BUS - 1.0f; }

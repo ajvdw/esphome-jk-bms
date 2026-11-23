@@ -66,26 +66,25 @@ jk_rs485_monitor:
     protocol_version: "JK02_32S"
     uart_id: uart_0
     rx_timeout: 50ms        # an incomplete message is given up after this time without new bytes
-    reply_timeout: 100ms    # a slave that answers a request within this time is the origin of the reply
 ```
 
 The BMS components refer to it with `jk_rs485_monitor_id: monitor0`.
 
 ### Who sent a reply?
 
-There is a master (address 0) that sends requests to slaves. A slave only answers a request that is addressed to it,
-so the slave a request is addressed to is the origin of the reply that starts within `reply_timeout` (100 ms) after the
-request. A reply that follows another reply of the same exchange (for example an acknowledge followed by the data) has
-to start within the same time after the previous message. The address that is embedded in a reply is not used.
+The pack id. The frame types 1 (settings) and 2 (live data) of the legacy replies contain it in the byte that is 8
+bytes before the end of the frame (index 300 of the 308 bytes). It is the origin address of the reply: the `jk_rs485_bms`
+with that `rs485_address` receives it. Requests, timing and the other address fields of a frame are not used.
 
-* The address of a request is the *terminal id* of an NW request (it must be 0-15) or the first byte of a legacy request.
-* A reply without a request within the reply timeout has no known origin: it is logged with a warning and ignored.
-* Time is measured when the bytes are read, so it is accurate to the loop interval of ESPHome (about 16 ms at most).
+* A pack id above 15 is invalid: the reply is logged with a warning and ignored.
+* Frame type 3 (device info) has no pack id: it is logged with a warning and not handed over.
+* The pack id is logged for every reply (`pack id 0x01 (byte 300): origin 0x01`). If all your replies show `0x00`,
+  the BMSs do not fill it in and every reply is for address 0.
 
 ### Logging
 
 Every message that is received is logged in hex at `DEBUG` level, requests as well as replies, followed by its decoded
-fields and the origin that was decided for a reply. Bytes that are not understood, invalid frames (checksum, end marker,
+fields and, for a reply, its pack id. Bytes that are not understood, invalid frames (checksum, end marker,
 length) and incomplete messages are logged in hex as well. A message is logged in rows of 32 bytes.
 
 ```
@@ -93,11 +92,10 @@ RX #1 NW request, 21 bytes in 0 ms, first message
   [0000] 4E 57 00 13 00 00 00 00 06 03 00 00 00 00 00 00 68 00 00 01 29
   NW length=19 terminal=0x00000000 command=0x06 (Read all data) source=0x03 (PC) transport=0x00 (Request)
   NW information=1 bytes, record=0x00000000, end=0x68, checksum=0x00000129
-  request from the master (0x00) to address 0x00
 RX #2 legacy reply, frame type 2 (live data), 308 bytes in 0 ms, 60 ms after the previous message
   [0000] 55 AA EB 90 02 01 E4 0C E5 0C E6 0C E7 0C E8 0C E9 0C EA 0C EB 0C EC 0C ED 0C EE 0C EF 0C F0 0C
   ...
-  origin 0x00: the reply starts 60 ms after the request (limit 100 ms)
+  pack id 0x01 (byte 300): origin 0x01
 ```
 
 ### Messages that are decoded

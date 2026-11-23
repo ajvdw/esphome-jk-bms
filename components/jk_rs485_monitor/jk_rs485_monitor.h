@@ -22,9 +22,9 @@ class JkRS485MonitorDevice;
 
 // Listens to the RS485 bus, it never transmits.
 //
-// Every message that is received is logged in hex and decoded. A master (address 0) sends requests to slaves, the
-// slave a request is addressed to is the origin of the reply that follows within the reply timeout (100 ms).
-// Replies are handed over to the registered devices with that origin address.
+// Every message that is received is logged in hex and decoded. The origin of a legacy reply is the pack id that is
+// stored in the frame types 1 and 2, in the byte 8 bytes before the end of the frame. Replies are handed over to the
+// registered devices with that origin address.
 //
 // Messages that are understood:
 //  - NW frames: 4E 57 <length> <terminal id> <command> <source> <transport> <information> <record> 68 <checksum>
@@ -61,9 +61,6 @@ class JkRS485Monitor : public uart::UARTDevice, public Component {
   // Time without new bytes after which an incomplete message is given up
   void set_rx_timeout(uint16_t rx_timeout) { rx_timeout_ = rx_timeout; }
 
-  // Maximum time between a request and the start of the reply of the slave the request was addressed to
-  void set_reply_timeout(uint16_t reply_timeout) { this->origin_tracker_.set_max_reply_delay_ms(reply_timeout); }
-
  protected:
   ProtocolVersion protocol_version_{PROTOCOL_VERSION_JK02_32S};
 
@@ -86,11 +83,8 @@ class JkRS485Monitor : public uart::UARTDevice, public Component {
   // Starts the log of a message: header line followed by the hex dump
   void log_message_(const char *label, const uint8_t *data, size_t size, uint32_t start_ms, uint32_t end_ms);
 
-  // Decides who sent a reply (see the reply timeout). Returns false if that can't be told.
-  bool resolve_origin_(uint32_t start_ms, uint32_t end_ms, uint8_t &origin);
-
   void dispatch_legacy_reply_(uint8_t origin, uint8_t frame_type, const std::vector<uint8_t> &data, uint32_t now);
-  void dispatch_nw_reply_(uint8_t origin, const NwFrame &frame, uint32_t now);
+  void dispatch_nw_frame_(const NwFrame &frame);
 
   void note_master_activity_(uint32_t now);
   void note_slave_activity_(uint8_t address, uint32_t now);
@@ -108,8 +102,6 @@ class JkRS485Monitor : public uart::UARTDevice, public Component {
   uint32_t unknown_run_start_ms_{0};
   uint32_t unknown_run_end_ms_{0};
 
-  ReplyOriginTracker origin_tracker_;
-
   uint16_t rx_timeout_{50};
   uint32_t message_counter_{0};
   bool have_previous_message_{false};
@@ -121,7 +113,7 @@ class JkRS485Monitor : public uart::UARTDevice, public Component {
   uint32_t rx_legacy_invalid_{0};
   uint32_t rx_unknown_bytes_{0};
   uint32_t rx_incomplete_{0};
-  uint32_t rx_replies_without_origin_{0};
+  uint32_t rx_replies_not_handed_over_{0};
 
   std::vector<JkRS485MonitorDevice *> devices_;
 
@@ -138,12 +130,12 @@ class JkRS485MonitorDevice {
  public:
   void set_parent(JkRS485Monitor *parent) { parent_ = parent; }
 
-  // A reply in the legacy format (55 AA EB 90 ..., frame type in data[4]) from the slave with origin_address
+  // A reply in the legacy format (55 AA EB 90 ..., frame type in data[4]) from the pack with origin_address
   virtual void on_jk_rs485_monitor_data(const uint8_t &origin_address, const uint8_t &frame_type,
                                         const std::vector<uint8_t> &data, const std::string &nodes_available) = 0;
 
-  // A reply in the NW format from the slave with origin_address
-  virtual void on_jk_rs485_monitor_nw_frame(const uint8_t &, const NwFrame &, const std::string &) {}
+  // A valid NW frame: request, reply or report. The terminal id of the frame is in frame.terminal_id.
+  virtual void on_jk_rs485_monitor_nw_frame(const NwFrame &, const std::string &) {}
 
  protected:
   friend JkRS485Monitor;

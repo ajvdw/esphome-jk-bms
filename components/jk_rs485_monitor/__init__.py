@@ -8,7 +8,6 @@ DEPENDENCIES = ["uart"]
 MULTI_CONF = True
 CONF_JK_RS485_MONITOR_ID = "jk_rs485_monitor_id"
 CONF_RX_TIMEOUT = "rx_timeout"
-CONF_REPLY_TIMEOUT = "reply_timeout"
 CONF_PROTOCOL_VERSION = "protocol_version"
 
 jk_rs485_monitor_ns = cg.esphome_ns.namespace("jk_rs485_monitor")
@@ -39,10 +38,6 @@ CONFIG_SCHEMA = (
             cv.Optional(
                 CONF_RX_TIMEOUT, default="50ms"
             ): cv.positive_time_period_milliseconds,
-            # A slave that answers a request within this time is the origin of the reply
-            cv.Optional(
-                CONF_REPLY_TIMEOUT, default="100ms"
-            ): cv.positive_time_period_milliseconds,
         }
     )
     .extend(cv.COMPONENT_SCHEMA)
@@ -63,7 +58,6 @@ async def to_code(config):
 
     await uart.register_uart_device(var, config)
     cg.add(var.set_rx_timeout(config[CONF_RX_TIMEOUT]))
-    cg.add(var.set_reply_timeout(config[CONF_REPLY_TIMEOUT]))
 
 
 

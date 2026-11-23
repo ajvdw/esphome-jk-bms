@@ -58,7 +58,6 @@ jk_rs485_monitor:
   - id: monitor0
     protocol_version: "JK02_32S"
     rx_timeout: 500ms
-#    reply_timeout: 100ms
     uart_id: uart_0
   
 jk_rs485_bms:

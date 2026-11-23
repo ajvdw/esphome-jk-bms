@@ -217,57 +217,30 @@ inline NwParseStatus nw_parse(const uint8_t *data, size_t size, size_t max_frame
 }
 
 // ---------------------------------------------------------------------------------------------------------------
-// Origin of replies
+// Legacy reply: 55 AA EB 90 <frame type> ... (308 bytes)
 //
-// A master (address 0) sends requests to slaves. The reply of a slave doesn't reliably say who sent it, but a slave
-// only answers requests that are addressed to it: a reply that starts within `max_reply_delay_ms` after a request
-// comes from the slave the request was addressed to. A reply that follows another reply of the same exchange (for
-// example an acknowledge followed by the data) has to start within the same time after the previous message.
+// The origin of a reply is the pack id. It is stored in the frame types 1 (settings) and 2 (live data), in the byte
+// that is 8 bytes before the end of the frame: index 300 of the 308 bytes.
 // ---------------------------------------------------------------------------------------------------------------
 
-class ReplyOriginTracker {
- public:
-  static constexpr int16_t UNKNOWN_ADDRESS = -1;
+static constexpr uint8_t LEGACY_FRAME_TYPE_SETTINGS = 1;
+static constexpr uint8_t LEGACY_FRAME_TYPE_LIVE_DATA = 2;
+static constexpr uint8_t LEGACY_FRAME_TYPE_DEVICE_INFO = 3;
+static constexpr size_t LEGACY_REPLY_PACK_ID_OFFSET_FROM_END = 8;
 
-  void set_max_reply_delay_ms(uint32_t value) { this->max_reply_delay_ms_ = value; }
-  uint32_t get_max_reply_delay_ms() const { return this->max_reply_delay_ms_; }
+// The pack id is defined for the frame types 1 and 2
+inline bool legacy_frame_type_has_pack_id(uint8_t frame_type) {
+  return frame_type == LEGACY_FRAME_TYPE_SETTINGS || frame_type == LEGACY_FRAME_TYPE_LIVE_DATA;
+}
 
-  // A request was received completely at end_ms. target_address is the slave it is addressed to, or UNKNOWN_ADDRESS
-  // if that can't be told: the replies that follow then have no known origin.
-  void on_request(int16_t target_address, uint32_t end_ms) {
-    this->exchange_open_ = target_address != UNKNOWN_ADDRESS;
-    this->target_address_ = target_address;
-    this->last_message_end_ms_ = end_ms;
-  }
+// Index of the pack id in a frame of frame_length bytes (frame_length >= LEGACY_REPLY_PACK_ID_OFFSET_FROM_END)
+inline size_t legacy_reply_pack_id_index(size_t frame_length) {
+  return frame_length - LEGACY_REPLY_PACK_ID_OFFSET_FROM_END;
+}
 
-  // A reply started at start_ms and ended at end_ms. Returns true and sets origin_address if the reply answers
-  // the last request. delay_ms receives the time between the previous message and this reply.
-  bool on_reply(uint32_t start_ms, uint32_t end_ms, uint8_t &origin_address, uint32_t &delay_ms) {
-    int32_t delay = int32_t(start_ms - this->last_message_end_ms_);
-    if (delay < 0) {
-      delay = 0;  // both were read in the same loop iteration
-    }
-    delay_ms = uint32_t(delay);
-    if (!this->exchange_open_ || delay_ms > this->max_reply_delay_ms_) {
-      this->exchange_open_ = false;
-      return false;
-    }
-    origin_address = uint8_t(this->target_address_);
-    this->last_message_end_ms_ = end_ms;
-    return true;
-  }
-
-  // Anything that is neither a request nor a reply of the exchange (like an unsolicited report) ends the exchange
-  void close_exchange() { this->exchange_open_ = false; }
-
-  bool exchange_open() const { return this->exchange_open_; }
-
- protected:
-  uint32_t max_reply_delay_ms_{500};
-  bool exchange_open_{false};
-  int16_t target_address_{UNKNOWN_ADDRESS};
-  uint32_t last_message_end_ms_{0};
-};
+inline uint8_t legacy_reply_pack_id(const uint8_t *frame, size_t frame_length) {
+  return frame[legacy_reply_pack_id_index(frame_length)];
+}
 
 }  // namespace jk_rs485_monitor
 }  // namespace esphome
