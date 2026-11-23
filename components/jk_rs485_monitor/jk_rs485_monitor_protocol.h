@@ -226,7 +226,7 @@ inline NwParseStatus nw_parse(const uint8_t *data, size_t size, size_t max_frame
 static constexpr uint8_t LEGACY_FRAME_TYPE_SETTINGS = 1;
 static constexpr uint8_t LEGACY_FRAME_TYPE_LIVE_DATA = 2;
 static constexpr uint8_t LEGACY_FRAME_TYPE_DEVICE_INFO = 3;
-static constexpr size_t LEGACY_REPLY_PACK_ID_OFFSET_FROM_END = 9;
+static constexpr size_t LEGACY_REPLY_PACK_ID_OFFSET_FROM_END = 7;
 
 // The pack id is defined for the frame types 1 and 2
 inline bool legacy_frame_type_has_pack_id(uint8_t frame_type) {
