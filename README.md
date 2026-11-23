@@ -25,11 +25,11 @@ jk_rs485_bms:
   - id: bms0
     device_id: bms_device_0
     rs485_address: 0x00
-    jk_rs485_sniffer_id: sniffer0
+    jk_rs485_monitor_id: monitor0
   - id: bms1
     device_id: bms_device_1
     rs485_address: 0x01
-    jk_rs485_sniffer_id: sniffer0
+    jk_rs485_monitor_id: monitor0
  
 sensor:
   - platform: jk_rs485_bms
@@ -55,8 +55,83 @@ sensor:
 * https://github.com/Louisvdw/dbus-serialbattery/blob/master/etc/dbus-serialbattery/jkbms.py
 * https://blog.ja-ke.tech/2020/02/07/ltt-power-bms-chinese-protocol.html
 
-## Sniffer only
+## Monitor
 
-`jk_rs485_sniffer` only listens to the RS485 bus, it never transmits. Configure the `uart:` with an `rx_pin` only
-(no `tx_pin`, no flow control pin). The `talk_pin` option of the sniffer, and the code that made the ESP act as bus
-master and poll the BMSs, have been removed. The BMSs must be polled by a JK master BMS on the bus.
+`jk_rs485_monitor` (formerly `jk_rs485_sniffer`) only listens to the RS485 bus, it never transmits. Configure the
+`uart:` with an `rx_pin` only (no `tx_pin`, no flow control pin). The BMSs must be polled by a master on the bus.
+
+```yaml
+jk_rs485_monitor:
+  - id: monitor0
+    protocol_version: "JK02_32S"
+    uart_id: uart_0
+    rx_timeout: 50ms        # an incomplete message is given up after this time without new bytes
+    reply_timeout: 100ms    # a slave that answers a request within this time is the origin of the reply
+```
+
+The BMS components refer to it with `jk_rs485_monitor_id: monitor0`.
+
+### Who sent a reply?
+
+There is a master (address 0) that sends requests to slaves. A slave only answers a request that is addressed to it,
+so the slave a request is addressed to is the origin of the reply that starts within `reply_timeout` (100 ms) after the
+request. A reply that follows another reply of the same exchange (for example an acknowledge followed by the data) has
+to start within the same time after the previous message. The address that is embedded in a reply is not used.
+
+* The address of a request is the *terminal id* of an NW request (it must be 0-15) or the first byte of a legacy request.
+* A reply without a request within the reply timeout has no known origin: it is logged with a warning and ignored.
+* Time is measured when the bytes are read, so it is accurate to the loop interval of ESPHome (about 16 ms at most).
+
+### Logging
+
+Every message that is received is logged in hex at `DEBUG` level, requests as well as replies, followed by its decoded
+fields and the origin that was decided for a reply. Bytes that are not understood, invalid frames (checksum, end marker,
+length) and incomplete messages are logged in hex as well. A message is logged in rows of 32 bytes.
+
+```
+RX #1 NW request, 21 bytes in 0 ms, first message
+  [0000] 4E 57 00 13 00 00 00 00 06 03 00 00 00 00 00 00 68 00 00 01 29
+  NW length=19 terminal=0x00000000 command=0x06 (Read all data) source=0x03 (PC) transport=0x00 (Request)
+  NW information=1 bytes, record=0x00000000, end=0x68, checksum=0x00000129
+  request from the master (0x00) to address 0x00
+RX #2 legacy reply, frame type 2 (live data), 308 bytes in 0 ms, 60 ms after the previous message
+  [0000] 55 AA EB 90 02 01 E4 0C E5 0C E6 0C E7 0C E8 0C E9 0C EA 0C EB 0C EC 0C ED 0C EE 0C EF 0C F0 0C
+  ...
+  origin 0x00: the reply starts 60 ms after the request (limit 100 ms)
+```
+
+### Messages that are decoded
+
+NW frames, all multi byte fields are big endian:
+
+| Offset | Length | Field | Description |
+|---|---|---|---|
+| 0 | 2 | Start header | `0x4E 0x57` ("NW") |
+| 2 | 2 | Frame length | bytes from offset 2 to the end of the checksum |
+| 4 | 4 | Terminal ID | BMS id / serial number (0 for broadcast / single) |
+| 8 | 1 | Command word | 0x01 Activate, 0x02 Write, 0x03 Read, 0x05 Pair, 0x06 Read all data |
+| 9 | 1 | Frame source | 0x00 BMS, 0x01 Bluetooth, 0x02 GPS, 0x03 PC |
+| 10 | 1 | Transport type | 0x00 Request, 0x01 Reply, 0x02 Active report |
+| 11 | N | Information field | `[Data ID (1 byte)] + [value (X bytes)]` pairs |
+| 11 + N | 4 | Record number | rolling packet sequence counter |
+| 15 + N | 1 | End marker | `0x68` |
+| 16 + N | 4 | Checksum | `0x00 0x00` + 16 bit sum of all bytes from `0x4E` up to and including `0x68` |
+
+A frame is accepted if the length, the end marker and the checksum are correct. The information field is passed on as
+it is; it is not split into data ids and values.
+
+The legacy messages are still understood: requests (`<address> 10 16 <code> .. <crc16>`, 11 bytes), their acknowledge
+(8 bytes) and the replies (`55 AA EB 90 ...`, 308 bytes). The entities of `jk_rs485_bms` are filled from these replies.
+
+### Migrating from `jk_rs485_sniffer`
+
+Rename `jk_rs485_sniffer:` to `jk_rs485_monitor:` and `jk_rs485_sniffer_id:` to `jk_rs485_monitor_id:`. The `talk_pin`
+option does not exist any more.
+
+### Tests
+
+The protocol layer (NW decoding and the origin rule) has no ESPHome dependencies and is tested on a PC:
+
+```bash
+g++ -std=c++17 -Wall -Wextra -I components/jk_rs485_monitor tests/test_monitor_protocol.cpp -o /tmp/test_monitor && /tmp/test_monitor
+```

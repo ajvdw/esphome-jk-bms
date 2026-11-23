@@ -3,12 +3,12 @@
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/components/sensor/sensor.h"
 #include "esphome/components/text_sensor/text_sensor.h"
-#include "../jk_rs485_sniffer/jk_rs485_sniffer.h"
+#include "../jk_rs485_monitor/jk_rs485_monitor.h"
 
 namespace esphome {
 
-namespace jk_rs485_sniffer {
-class JkRS485Sniffer;
+namespace jk_rs485_monitor {
+class JkRS485Monitor;
 };
 
 namespace jk_rs485_bms {
@@ -24,7 +24,7 @@ enum ProtocolVersion {
   PROTOCOL_VERSION_JK02_32S,
 };
 
-class JkRS485Bms : public PollingComponent, public jk_rs485_sniffer::JkRS485SnifferDevice {
+class JkRS485Bms : public PollingComponent, public jk_rs485_monitor::JkRS485MonitorDevice {
  public:
 
   JkRS485Bms() = default;
@@ -544,7 +544,7 @@ class JkRS485Bms : public PollingComponent, public jk_rs485_sniffer::JkRS485Snif
   void dump_config() override;
   void setup() override;
 
-  void on_jk_rs485_sniffer_data(const uint8_t &origin_address, const uint8_t &frame_type, const std::vector<uint8_t> &data,const std::string &nodes_available) override;
+  void on_jk_rs485_monitor_data(const uint8_t &origin_address, const uint8_t &frame_type, const std::vector<uint8_t> &data,const std::string &nodes_available) override;
 
   void update() override;
 

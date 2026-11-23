@@ -1,12 +1,12 @@
 import esphome.codegen as cg
-from esphome.components import jk_rs485_sniffer
+from esphome.components import jk_rs485_monitor
 import esphome.config_validation as cv
 from esphome.const import CONF_DEVICE_ID, CONF_ID, CONF_PLATFORM
 from esphome.core import CORE
 
-from ..jk_rs485_sniffer import CONF_JK_RS485_SNIFFER_ID, JK_RS485_SNIFFER_COMPONENT_SCHEMA, jk_rs485_sniffer_ns
+from ..jk_rs485_monitor import CONF_JK_RS485_MONITOR_ID, JK_RS485_MONITOR_COMPONENT_SCHEMA, jk_rs485_monitor_ns
 
-AUTO_LOAD = ["jk_rs485_sniffer", "binary_sensor", "sensor", "text_sensor"]
+AUTO_LOAD = ["jk_rs485_monitor", "binary_sensor", "sensor", "text_sensor"]
 CODEOWNERS = ["@syssi"]
 MULTI_CONF = True
 
@@ -14,7 +14,7 @@ CONF_JK_RS485_BMS_ID = "jk_rs485_bms_id"
 CONF_RS485_ADDRESS = "rs485_address"
 
 jk_rs485_bms_ns = cg.esphome_ns.namespace("jk_rs485_bms")
-JkRS485Bms = jk_rs485_bms_ns.class_("JkRS485Bms", cg.PollingComponent, jk_rs485_sniffer.JkRS485SnifferDevice)
+JkRS485Bms = jk_rs485_bms_ns.class_("JkRS485Bms", cg.PollingComponent, jk_rs485_monitor.JkRS485MonitorDevice)
 
 CONFIG_SCHEMA = (
     cv.Schema(
@@ -26,7 +26,7 @@ CONFIG_SCHEMA = (
         }
     )
     .extend(cv.polling_component_schema("5s"))
-    .extend(jk_rs485_sniffer.jk_rs485_sniffer_device_schema())
+    .extend(jk_rs485_monitor.jk_rs485_monitor_device_schema())
 )
 
 def _hub_raw_config(hub_id):
@@ -87,5 +87,5 @@ JK_RS485_BMS_COMPONENT_SCHEMA = cv.Schema(
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])                                                             
     await cg.register_component(var, config)                                                          
-    await jk_rs485_sniffer.register_jk_rs485_bms_device(var, config)                                 
+    await jk_rs485_monitor.register_jk_rs485_bms_device(var, config)                                 
     cg.add(var.set_address(config[CONF_RS485_ADDRESS]))
