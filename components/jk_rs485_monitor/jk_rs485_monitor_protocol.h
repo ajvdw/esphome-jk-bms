@@ -220,7 +220,8 @@ inline NwParseStatus nw_parse(const uint8_t *data, size_t size, size_t max_frame
 // Legacy reply: 55 AA EB 90 <frame type> ... (308 bytes)
 //
 // The origin of a reply is the pack id. It is stored in the frame types 1 (settings) and 2 (live data), in the byte
-// that is 8 bytes before the end of the frame: index 300 of the 308 bytes.
+// that is 7 bytes before the end of the frame: index 301 of the 308 bytes. If that byte is 0x10, the pack id is the
+// byte before it (index 300).
 // ---------------------------------------------------------------------------------------------------------------
 
 static constexpr uint8_t LEGACY_FRAME_TYPE_SETTINGS = 1;
