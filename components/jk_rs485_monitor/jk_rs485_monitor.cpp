@@ -261,7 +261,7 @@ void JkRS485Monitor::log_message_(const char *label, const uint8_t *data, size_t
                                   uint32_t end_ms) {
   this->message_counter_++;
 
-  char gap_text[40];
+  char gap_text[80];
   if (this->have_previous_message_) {
     int32_t gap = int32_t(start_ms - this->previous_message_end_ms_);
     snprintf(gap_text, sizeof(gap_text), "%d ms after the previous message", (int) std::max<int32_t>(gap, 0));
