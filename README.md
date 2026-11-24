@@ -43,18 +43,6 @@ sensor:
 * An entity that sets a `device_id` different from its BMS is rejected, to catch copy/paste mixups between BMSs.
 * Without a `device_id` on the BMS the previous behaviour is kept: `device_id` is set per entity.
 
-## References
-* https://www.youtube.com/@OffGridGarageAustralia
-* https://github.com/syssi/esphome-jk-bms
-* https://github.com/txubelaxu/esphome-jk-bms
-* https://github.com/jblance/jkbms
-* https://github.com/jblance/mpp-solar/issues/112
-* https://github.com/jblance/mpp-solar/blob/master/mppsolar/protocols/jk232.py
-* https://github.com/jblance/mpp-solar/blob/master/mppsolar/protocols/jk485.py
-* https://github.com/sshoecraft/jktool
-* https://github.com/Louisvdw/dbus-serialbattery/blob/master/etc/dbus-serialbattery/jkbms.py
-* https://blog.ja-ke.tech/2020/02/07/ltt-power-bms-chinese-protocol.html
-
 ## Monitor
 
 `jk_rs485_monitor` (formerly `jk_rs485_sniffer`) only listens to the RS485 bus, it never transmits. Configure the
@@ -74,3 +62,16 @@ The BMS components refer to it with `jk_rs485_monitor_id: monitor0`.
 
 Rename `jk_rs485_sniffer:` to `jk_rs485_monitor:` and `jk_rs485_sniffer_id:` to `jk_rs485_monitor_id:`. The `talk_pin`
 option does not exist any more.
+
+## References
+
+* https://www.youtube.com/@OffGridGarageAustralia
+* https://github.com/syssi/esphome-jk-bms
+* https://github.com/txubelaxu/esphome-jk-bms
+* https://github.com/jblance/jkbms
+* https://github.com/jblance/mpp-solar/issues/112
+* https://github.com/jblance/mpp-solar/blob/master/mppsolar/protocols/jk232.py
+* https://github.com/jblance/mpp-solar/blob/master/mppsolar/protocols/jk485.py
+* https://github.com/sshoecraft/jktool
+* https://github.com/Louisvdw/dbus-serialbattery/blob/master/etc/dbus-serialbattery/jkbms.py
+* https://blog.ja-ke.tech/2020/02/07/ltt-power-bms-chinese-protocol.html
