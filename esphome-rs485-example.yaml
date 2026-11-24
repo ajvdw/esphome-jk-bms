@@ -46,7 +46,7 @@ captive_portal:
 external_components:
   source: github://ajvdw/esphome-jk-bms@main
   refresh: 0s
-#  components: [jk_rs485_sniffer , jk_rs485_bms]
+#  components: [jk_rs485_monitor , jk_rs485_bms]
 
 uart: 
   - id: uart_0
@@ -54,8 +54,8 @@ uart:
     rx_buffer_size: 384  
     baud_rate: 115200
 
-jk_rs485_sniffer:
-  - id: sniffer0
+jk_rs485_monitor:
+  - id: monitor0
     protocol_version: "JK02_32S"
     rx_timeout: 500ms
     uart_id: uart_0
@@ -64,12 +64,12 @@ jk_rs485_bms:
   - id: bms0
     device_id: bms_device_0
     rs485_address: 0x00
-    jk_rs485_sniffer_id: sniffer0
+    jk_rs485_monitor_id: monitor0
     update_interval: 180s
   - id: bms1
     device_id: bms_device_1
     rs485_address: 0x01
-    jk_rs485_sniffer_id: sniffer0
+    jk_rs485_monitor_id: monitor0
     update_interval: 180s
 
     

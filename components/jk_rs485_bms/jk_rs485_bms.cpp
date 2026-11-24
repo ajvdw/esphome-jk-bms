@@ -99,7 +99,7 @@ static const char *const BATTERY_TYPES[BATTERY_TYPES_SIZE] = {
     "Lithium Titanate",
 };
 
-void JkRS485Bms::on_jk_rs485_sniffer_data(const uint8_t &origin_address, const uint8_t &frame_type,
+void JkRS485Bms::on_jk_rs485_monitor_data(const uint8_t &origin_address, const uint8_t &frame_type,
                                           const std::vector<uint8_t> &data,
                                           const std::string &nodes_available_received) {
 

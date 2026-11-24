@@ -9,7 +9,7 @@ esphome:
 jk_rs485_bms:
   - id: bms${nr}
     rs485_address: ${address}
-    jk_rs485_sniffer_id: sniffer0
+    jk_rs485_monitor_id: monitor0
     update_interval: 180s
 
 sensor:

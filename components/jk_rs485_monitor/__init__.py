@@ -6,21 +6,21 @@ from esphome.core import CORE
 
 DEPENDENCIES = ["uart"]
 MULTI_CONF = True
-CONF_JK_RS485_SNIFFER_ID = "jk_rs485_sniffer_id"
+CONF_JK_RS485_MONITOR_ID = "jk_rs485_monitor_id"
 CONF_RX_TIMEOUT = "rx_timeout"
 CONF_PROTOCOL_VERSION = "protocol_version"
 
-jk_rs485_sniffer_ns = cg.esphome_ns.namespace("jk_rs485_sniffer")
+jk_rs485_monitor_ns = cg.esphome_ns.namespace("jk_rs485_monitor")
 
 try:
-    JkRS485Sniffer
-    JkRS485SnifferDevice
+    JkRS485Monitor
+    JkRS485MonitorDevice
 except NameError:
-    JkRS485Sniffer = jk_rs485_sniffer_ns.class_("JkRS485Sniffer", cg.Component, uart.UARTDevice)
-    JkRS485SnifferDevice = jk_rs485_sniffer_ns.class_("JkRS485SnifferDevice")
+    JkRS485Monitor = jk_rs485_monitor_ns.class_("JkRS485Monitor", cg.Component, uart.UARTDevice)
+    JkRS485MonitorDevice = jk_rs485_monitor_ns.class_("JkRS485MonitorDevice")
 
 
-ProtocolVersion = jk_rs485_sniffer_ns.enum("ProtocolVersion")
+ProtocolVersion = jk_rs485_monitor_ns.enum("ProtocolVersion")
 PROTOCOL_VERSION_OPTIONS = {
     "JK04": ProtocolVersion.PROTOCOL_VERSION_JK04,
     "JK02_24S": ProtocolVersion.PROTOCOL_VERSION_JK02_24S,
@@ -30,28 +30,29 @@ PROTOCOL_VERSION_OPTIONS = {
 CONFIG_SCHEMA = (
     cv.Schema(
         {
-            cv.GenerateID(): cv.declare_id(JkRS485Sniffer),
+            cv.GenerateID(): cv.declare_id(JkRS485Monitor),
             cv.Required(CONF_PROTOCOL_VERSION): cv.enum(
                 PROTOCOL_VERSION_OPTIONS, upper=True
             ),         
+            # Time without new bytes after which an incomplete message is given up
             cv.Optional(
                 CONF_RX_TIMEOUT, default="50ms"
-            ): cv.positive_time_period_milliseconds,            
+            ): cv.positive_time_period_milliseconds,
         }
     )
     .extend(cv.COMPONENT_SCHEMA)
     .extend(uart.UART_DEVICE_SCHEMA)
 )
 
-JK_RS485_SNIFFER_COMPONENT_SCHEMA = cv.Schema(
+JK_RS485_MONITOR_COMPONENT_SCHEMA = cv.Schema(
     {
-        cv.GenerateID(CONF_JK_RS485_SNIFFER_ID): cv.use_id(JkRS485Sniffer),
+        cv.GenerateID(CONF_JK_RS485_MONITOR_ID): cv.use_id(JkRS485Monitor),
     }
 )
 
 
 async def to_code(config):
-    cg.add_global(jk_rs485_sniffer_ns.using)
+    cg.add_global(jk_rs485_monitor_ns.using)
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
 
@@ -60,15 +61,15 @@ async def to_code(config):
 
 
 
-def jk_rs485_sniffer_device_schema():
+def jk_rs485_monitor_device_schema():
     schema = {
-        cv.GenerateID(CONF_JK_RS485_SNIFFER_ID): cv.use_id(JkRS485Sniffer),
+        cv.GenerateID(CONF_JK_RS485_MONITOR_ID): cv.use_id(JkRS485Monitor),
     }
     return cv.Schema(schema)
 
 
 async def register_jk_rs485_bms_device(var, config):
-    parent = await cg.get_variable(config[CONF_JK_RS485_SNIFFER_ID])
+    parent = await cg.get_variable(config[CONF_JK_RS485_MONITOR_ID])
     cg.add(var.set_parent(parent))
                                                    
     cg.add(parent.register_device(var))
