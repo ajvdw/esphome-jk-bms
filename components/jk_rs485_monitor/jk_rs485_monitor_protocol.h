@@ -226,7 +226,7 @@ inline NwParseStatus nw_parse(const uint8_t *data, size_t size, size_t max_frame
 static constexpr uint8_t LEGACY_FRAME_TYPE_SETTINGS = 1;
 static constexpr uint8_t LEGACY_FRAME_TYPE_LIVE_DATA = 2;
 static constexpr uint8_t LEGACY_FRAME_TYPE_DEVICE_INFO = 3;
-static constexpr size_t LEGACY_REPLY_PACK_ID_OFFSET_FROM_END = 7;
+static constexpr size_t LEGACY_REPLY_PACK_ID_OFFSET_FROM_END = 6;
 
 // The pack id is defined for the frame types 1 and 2
 inline bool legacy_frame_type_has_pack_id(uint8_t frame_type) {
@@ -239,7 +239,10 @@ inline size_t legacy_reply_pack_id_index(size_t frame_length) {
 }
 
 inline uint8_t legacy_reply_pack_id(const uint8_t *frame, size_t frame_length) {
-  return frame[legacy_reply_pack_id_index(frame_length)];
+  if( frame[legacy_reply_pack_id_index(frame_length)] == 0xF )
+    return frame[legacy_reply_pack_id_index(frame_length-1)];
+  else
+    return frame[legacy_reply_pack_id_index(frame_length)];
 }
 
 }  // namespace jk_rs485_monitor
