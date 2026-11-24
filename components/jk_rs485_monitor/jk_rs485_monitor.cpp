@@ -362,13 +362,14 @@ void JkRS485Monitor::handle_legacy_reply_(size_t size) {
     return;
   }
 
-  
-  const size_t pack_id_index = size - LEGACY_REPLY_PACK_ID_OFFSET_FROM_END;
+  // The pack id is 7 bytes before the end of the frame. If that byte is 0x10, the pack id is the byte before it.
+  size_t pack_id_index = size - LEGACY_REPLY_PACK_ID_OFFSET_FROM_END;
   uint8_t pack_id = data[pack_id_index];
-  
-  if( pack_id == 0x10 )
-    pack_id = data[pack_id_index-1];
-  
+  if (pack_id == 0x10) {
+    pack_id_index--;
+    pack_id = data[pack_id_index];
+  }
+
   if (pack_id > MAX_ADDRESS) {
     this->rx_replies_not_handed_over_++;
     ESP_LOGW(TAG, "  pack id 0x%02X (byte %u) is out of range (max %u), reply not handed over", (unsigned int) pack_id,
