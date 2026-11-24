@@ -418,12 +418,15 @@ void JkRS485Bms::decode_jk02_cell_info_(const std::vector<uint8_t> &data) {
   if (frame_version == FRAME_VERSION_JK02_32S) {
     this->publish_state_(this->battery_total_alarms_count_sensor_, (float) this->battery_total_alarms_count_);
     this->publish_state_(this->battery_total_alarms_active_sensor_, (float) this->battery_total_alarms_active_);
-  }
+ }
+ if( current < 0.0F ) {
+    this->publish_state_(this->charge_status_text_sensor_, "Discharge");
+ else    
   // Charge status reported by the BMS (0x00: Bulk, 0x01: Absorption, 0x02: Float), 32S frames only
   if (frame_version == FRAME_VERSION_JK02_32S && data.size() > (size_t) (248 + offset)) {
     this->publish_state_(this->charge_status_text_sensor_, this->charge_status_id_to_string_(data[248 + offset]));
   }
-
+ }
   this->status_notification_received_ = true;
 }
 
