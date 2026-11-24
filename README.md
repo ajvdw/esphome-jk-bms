@@ -72,14 +72,16 @@ The BMS components refer to it with `jk_rs485_monitor_id: monitor0`.
 
 ### Who sent a reply?
 
-The pack id. The frame types 1 (settings) and 2 (live data) of the legacy replies contain it in the byte that is 8
-bytes before the end of the frame (index 300 of the 308 bytes). It is the origin address of the reply: the `jk_rs485_bms`
-with that `rs485_address` receives it. Requests, timing and the other address fields of a frame are not used.
+The pack id. The frame types 1 (settings) and 2 (live data) of the legacy replies contain it in the byte that is 7
+bytes before the end of the frame (index 301 of the 308 bytes). If that byte is `0x10`, the pack id is the byte before
+it (index 300). It is the origin address of the reply: the `jk_rs485_bms` with that `rs485_address` receives it.
+Requests, timing and the other address fields of a frame are not used.
 
 * A pack id above 15 is invalid: the reply is logged with a warning and ignored.
 * Frame type 3 (device info) has no pack id: it is logged with a warning and not handed over.
-* The pack id is logged for every reply (`pack id 0x01 (byte 300): origin 0x01`). If all your replies show `0x00`,
-  the BMSs do not fill it in and every reply is for address 0.
+* The pack id is logged for every reply together with the index it was read from (`pack id 0x01 (byte 301): origin
+  0x01`, or byte 300 after the `0x10` rule). If all your replies show `0x00`, the BMSs do not fill it in and every
+  reply is for address 0.
 
 ### Logging
 
@@ -95,7 +97,7 @@ RX #1 NW request, 21 bytes in 0 ms, first message
 RX #2 legacy reply, frame type 2 (live data), 308 bytes in 0 ms, 60 ms after the previous message
   [0000] 55 AA EB 90 02 01 E4 0C E5 0C E6 0C E7 0C E8 0C E9 0C EA 0C EB 0C EC 0C ED 0C EE 0C EF 0C F0 0C
   ...
-  pack id 0x01 (byte 300): origin 0x01
+  pack id 0x01 (byte 301): origin 0x01
 ```
 
 ### Messages that are decoded
