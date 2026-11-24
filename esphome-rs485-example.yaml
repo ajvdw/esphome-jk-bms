@@ -196,8 +196,6 @@ sensor:
       name: "temperature sensor 5"
     temperature_powertube:
       name: "temperature powertube"
-      filters:
-       - round: 0   
     battery_capacity_state_of_charge:
       name: "battery capacity state of charge"
     battery_capacity_remaining:
@@ -355,8 +353,6 @@ sensor:
       name: "temperature sensor 5"      
     temperature_powertube:
       name: "temperature powertube"
-      filters:
-       - round: 0
     battery_capacity_state_of_charge:
       name: "battery capacity state of charge"
     battery_capacity_remaining:
