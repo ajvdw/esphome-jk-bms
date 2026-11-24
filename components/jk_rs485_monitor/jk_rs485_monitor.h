@@ -23,8 +23,8 @@ class JkRS485MonitorDevice;
 // Listens to the RS485 bus, it never transmits.
 //
 // Every message that is received is logged in hex and decoded. The origin of a legacy reply is the pack id that is
-// stored in the frame types 1 and 2, in the byte 8 bytes before the end of the frame. Replies are handed over to the
-// registered devices with that origin address.
+// stored in the frame types 1 and 2, in the byte 7 bytes before the end of the frame (the byte before it if that one is
+// 0x10). Replies are handed over to the registered devices with that origin address.
 //
 // Messages that are understood:
 //  - NW frames: 4E 57 <length> <terminal id> <command> <source> <transport> <information> <record> 68 <checksum>
