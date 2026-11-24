@@ -233,14 +233,5 @@ inline bool legacy_frame_type_has_pack_id(uint8_t frame_type) {
   return frame_type == LEGACY_FRAME_TYPE_SETTINGS || frame_type == LEGACY_FRAME_TYPE_LIVE_DATA;
 }
 
-// Index of the pack id in a frame of frame_length bytes (frame_length >= LEGACY_REPLY_PACK_ID_OFFSET_FROM_END)
-inline size_t legacy_reply_pack_id_index(size_t frame_length) {
-  size_t pack_id_index = frame_length - LEGACY_REPLY_PACK_ID_OFFSET_FROM_END;
-  if( frame[pack_id_index] == 0xF )
-    pack_id_index--;
-  
-  return pack_id_index;
-}
-
 }  // namespace jk_rs485_monitor
 }  // namespace esphome
