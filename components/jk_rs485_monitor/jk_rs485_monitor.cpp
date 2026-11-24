@@ -364,7 +364,8 @@ void JkRS485Monitor::handle_legacy_reply_(size_t size) {
 
   
   const size_t pack_id_index = size - LEGACY_REPLY_PACK_ID_OFFSET_FROM_END;
-  const uint8_t pack_id = data[pack_id_index];
+  uint8_t pack_id = data[pack_id_index];
+  
   if( pack_id == 0xF )
     pack_id = data[pack_id_index-1];
   
