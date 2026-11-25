@@ -1,4 +1,7 @@
-"""Constants for the jk bms ble component."""
+"""Constants for the jk_rs485_bms component."""
+
+CONF_SMART_SLEEP_TIME = "smart_sleep_time"
+
 CONF_STATUS_BALANCING = "status_balancing"
 CONF_STATUS_ONLINE = "status_online"
 CONF_STATUS_PRECHARGING = "status_precharging"
@@ -6,9 +9,7 @@ CONF_STATUS_CHARGING = "status_charging"
 CONF_STATUS_DISCHARGING = "status_discharging"
 CONF_STATUS_HEATING = "status_heating"
 
-
-CONF_SMART_SLEEP_TIME = "smart_sleep_time"
-
+# Alarms of the protection bits, in the order of their bits in the cell info frame (bit 0 of the first byte first)
 CONF_ALARM_WIRERES = "alarm_wireres"
 CONF_ALARM_MOSOTP = "alarm_mosotp"
 CONF_ALARM_CELLQUANTITY = "alarm_cellquantity"
@@ -34,9 +35,46 @@ CONF_ALARM_BATTERYOVERTEMP = "alarm_batteryovertemp"
 CONF_ALARM_TEMPERATURESENSORANOMALY = "alarm_temperaturesensoranomaly"
 CONF_ALARM_PLCMODULEANOMALY = "alarm_plcmoduleanomaly"
 
+# Alarms of absent temperature sensors
 CONF_ALARM_MOSTEMPSENSORABSENT = "alarm_mostempsensorabsent"
 CONF_ALARM_BATTEMPSENSOR1ABSENT = "alarm_battempsensor1absent"
 CONF_ALARM_BATTEMPSENSOR2ABSENT = "alarm_battempsensor2absent"
 CONF_ALARM_BATTEMPSENSOR3ABSENT = "alarm_battempsensor3absent"
 CONF_ALARM_BATTEMPSENSOR4ABSENT = "alarm_battempsensor4absent"
 CONF_ALARM_BATTEMPSENSOR5ABSENT = "alarm_battempsensor5absent"
+
+PROTECTION_ALARMS = (
+    CONF_ALARM_WIRERES,
+    CONF_ALARM_MOSOTP,
+    CONF_ALARM_CELLQUANTITY,
+    CONF_ALARM_CURSENSORERR,
+    CONF_ALARM_CELLOVP,
+    CONF_ALARM_BATOVP,
+    CONF_ALARM_CHOCP,
+    CONF_ALARM_CHSCP,
+    CONF_ALARM_CHOTP,
+    CONF_ALARM_CHUTP,
+    CONF_ALARM_CPUAUXCOMMUERR,
+    CONF_ALARM_CELLUVP,
+    CONF_ALARM_BATUVP,
+    CONF_ALARM_DCHOCP,
+    CONF_ALARM_DCHSCP,
+    CONF_ALARM_DCHOTP,
+    CONF_ALARM_CHARGEMOS,
+    CONF_ALARM_DISCHARGEMOS,
+    CONF_ALARM_GPSDISCONNETED,
+    CONF_ALARM_MODIFYPWDINTIME,
+    CONF_ALARM_DISCHARGEONFAILED,
+    CONF_ALARM_BATTERYOVERTEMP,
+    CONF_ALARM_TEMPERATURESENSORANOMALY,
+    CONF_ALARM_PLCMODULEANOMALY,
+)
+
+TEMPERATURE_ALARMS = (
+    CONF_ALARM_MOSTEMPSENSORABSENT,
+    CONF_ALARM_BATTEMPSENSOR1ABSENT,
+    CONF_ALARM_BATTEMPSENSOR2ABSENT,
+    CONF_ALARM_BATTEMPSENSOR3ABSENT,
+    CONF_ALARM_BATTEMPSENSOR4ABSENT,
+    CONF_ALARM_BATTEMPSENSOR5ABSENT,
+)
