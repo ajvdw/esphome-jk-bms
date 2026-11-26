@@ -11,7 +11,7 @@ from ..jk_rs485_monitor import (
 )
 
 AUTO_LOAD = ["jk_rs485_monitor", "binary_sensor", "sensor", "text_sensor"]
-CODEOWNERS = ["@syssi"]
+CODEOWNERS = ["@ajvdw"]
 MULTI_CONF = True
 
 CONF_JK_RS485_BMS_ID = "jk_rs485_bms_id"
