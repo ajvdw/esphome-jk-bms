@@ -46,7 +46,6 @@ captive_portal:
 external_components:
   source: github://ajvdw/esphome-jk-bms@main
   refresh: 0s
-#  components: [jk_rs485_monitor , jk_rs485_bms]
 
 uart:
   - id: uart_0
