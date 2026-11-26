@@ -48,7 +48,6 @@ CONFIG_SCHEMA = cv.All(
     JK_RS485_BMS_COMPONENT_SCHEMA.extend({cv.Optional(key): schema for key, schema in BINARY_SENSORS.items()}),
 )
 
-
 async def to_code(config):
     hub = await cg.get_variable(config[CONF_JK_RS485_BMS_ID])
     for key in BINARY_SENSORS:
