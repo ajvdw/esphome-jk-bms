@@ -1,0 +1,186 @@
+# Sensors for ONE JK-BMS, shared by all BMS units.
+# Included once per BMS from the main file with a different bms_id.
+# The device assignment comes from `device_id` on the jk_rs485_bms component,
+# so only the component id is needed here.
+#
+# Variables:
+#   bms_id   id of the jk_rs485_bms component (bms0, bms1, ...)
+
+sensor:
+  - platform: jk_rs485_bms
+    jk_rs485_bms_id: ${bms_id}
+    balancing_direction:
+      name: "balancing direction"
+    battery_capacity_setting:
+      name: "battery capacity setting"
+#    heating_current:
+#      name: "heating current"
+    cell_voltage_min:
+      name: "cell voltage min"
+    cell_voltage_max:
+      name: "cell voltage max"
+    cell_voltage_min_cell_number:
+      name: "cell voltage min cell number"
+    cell_voltage_max_cell_number:
+      name: "cell voltage max cell number"
+    cell_delta_voltage:
+      name: "cell delta voltage"
+    cell_average_voltage:
+      name: "cell average voltage"
+    cell_resistance_min:
+      name: "cell resistance min"
+    cell_resistance_max:
+      name: "cell resistance max"
+    cell_resistance_min_cell_number:
+      name: "cell resistance min cell number"
+    cell_resistance_max_cell_number:
+      name: "cell resistance max cell number"
+    cell_voltage_01:
+      name: "cell voltage 01"
+    cell_voltage_02:
+      name: "cell voltage 02"
+    cell_voltage_03:
+      name: "cell voltage 03"
+    cell_voltage_04:
+      name: "cell voltage 04"
+    cell_voltage_05:
+      name: "cell voltage 05"
+    cell_voltage_06:
+      name: "cell voltage 06"
+    cell_voltage_07:
+      name: "cell voltage 07"
+    cell_voltage_08:
+      name: "cell voltage 08"
+    cell_voltage_09:
+      name: "cell voltage 09"
+    cell_voltage_10:
+      name: "cell voltage 10"
+    cell_voltage_11:
+      name: "cell voltage 11"
+    cell_voltage_12:
+      name: "cell voltage 12"
+    cell_voltage_13:
+      name: "cell voltage 13"
+    cell_voltage_14:
+      name: "cell voltage 14"
+    cell_voltage_15:
+      name: "cell voltage 15"
+    cell_voltage_16:
+      name: "cell voltage 16"
+    cell_resistance_01:
+      name: "cell resistance 01"
+    cell_resistance_02:
+      name: "cell resistance 02"
+    cell_resistance_03:
+      name: "cell resistance 03"
+    cell_resistance_04:
+      name: "cell resistance 04"
+    cell_resistance_05:
+      name: "cell resistance 05"
+    cell_resistance_06:
+      name: "cell resistance 06"
+    cell_resistance_07:
+      name: "cell resistance 07"
+    cell_resistance_08:
+      name: "cell resistance 08"
+    cell_resistance_09:
+      name: "cell resistance 09"
+    cell_resistance_10:
+      name: "cell resistance 10"
+    cell_resistance_11:
+      name: "cell resistance 11"
+    cell_resistance_12:
+      name: "cell resistance 12"
+    cell_resistance_13:
+      name: "cell resistance 13"
+    cell_resistance_14:
+      name: "cell resistance 14"
+    cell_resistance_15:
+      name: "cell resistance 15"
+    cell_resistance_16:
+      name: "cell resistance 16"
+    battery_voltage:
+      name: "battery voltage"
+    battery_current:
+      name: "battery current"
+    battery_power:
+      name: "battery power"
+    battery_power_charging:
+      name: "battery power charging"
+    battery_power_discharging:
+      name: "battery power discharging"
+    temperature_sensor_1:
+      name: "temperature sensor 1"
+    temperature_sensor_2:
+      name: "temperature sensor 2"
+    temperature_sensor_3:
+      name: "temperature sensor 3"
+    temperature_sensor_4:
+      name: "temperature sensor 4"
+    temperature_sensor_5:
+      name: "temperature sensor 5"
+    temperature_powertube:
+      name: "temperature powertube"
+    battery_capacity_state_of_charge:
+      name: "battery capacity state of charge"
+    battery_capacity_remaining:
+      name: "battery capacity remaining"
+    charging_cycles:
+      name: "charging cycles"
+    battery_capacity_total_charging_cycle:
+      name: "battery capacity total charging cycle"
+    battery_total_runtime:
+      name: "battery total runtime"
+    balancing_current:
+      name: "balancing current"
+    errors_bitmask:
+      name: "errors bitmask"
+    cell_count_real:
+      name: "cell count real"
+    smart_sleep_time:
+      name: "smart sleep time"
+    powertube_temperature_protection:
+      name: "powertube temperature protection"
+    powertube_temperature_protection_recovery:
+      name: "powertube temperature protection recovery"
+    battery_total_alarms_count:
+      name: "battery total alarms count"
+    battery_total_alarms_active:
+      name: "battery total alarms active"
+    emergency_time_countdown:
+      name: "emergency time countdown"
+    battery_soh_valuation:
+      name: "battery soh valuation"
+    discharging_overcurrent_protection_release_time:
+      name: "discharging overcurrent protection release time"
+    discharging_short_circuit_protection_release_time:
+      name: "discharging short circuit protection release time"
+    charging_overcurrent_protection_release_time:
+      name: "charging overcurrent protection release time"
+    charging_short_circuit_protection_release_time:
+      name: "charging short circuit protection release time"
+    cell_undervoltage_protection_release_time:
+      name: "cell undervoltage protection release time"
+    cell_overvoltage_protection_release_time:
+      name: "cell overvoltage protection release time"
+
+
+text_sensor:
+  - platform: jk_rs485_bms
+    jk_rs485_bms_id: ${bms_id}
+    errors:
+      name: "bms errors"
+    charge_status:
+      name: "bms charging status"
+
+binary_sensor:
+  - platform: jk_rs485_bms
+    jk_rs485_bms_id: ${bms_id}
+    status_charging:
+      name: "status charging"
+    status_discharging:
+      name: "status discharging"
+    status_balancing:
+      name: "status balancing"
+    status_heating:
+      name: "status_heating"
