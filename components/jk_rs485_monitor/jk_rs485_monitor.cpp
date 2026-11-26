@@ -17,7 +17,7 @@ static const size_t LEGACY_REPLY_CHECKSUM_INDEX = 299;
 static const size_t LEGACY_REPLY_FRAME_TYPE_INDEX = 4;
 static const uint8_t LEGACY_REPLY_HEADER[4] = {0x55, 0xAA, 0xEB, 0x90};
 static const uint8_t LEGACY_FUNCTION_WRITE_REGISTERS = 0x10;
-static const uint8_t MAX_ADDRESS = 15;
+static const uint8_t MAX_ADDRESS = 15;  // the nodes_ array has MAX_ADDRESS + 1 entries
 
 static const size_t HEX_BYTES_PER_LINE = 32;
 static const size_t UNKNOWN_RUN_MAX_SIZE = 64;
@@ -88,10 +88,10 @@ void JkRS485Monitor::loop() {
 
   if (!received) {
     // Nodes that stay silent for too long are no longer available
-    for (uint8_t cont = 0; cont < 16; cont++) {
-      if (now - this->rs485_network_node[cont].last_message_received >
+    for (uint8_t address = 0; address < MAX_NODES; address++) {
+      if (now - this->nodes_[address].last_message_received >
           NO_MESSAGE_RECEIVED_TIME_SET_AS_UNAVAILABLE_MILLISECONDS) {
-        this->set_node_availability(cont, 0);
+        this->set_node_availability(address, 0);
       }
     }
   }
@@ -383,7 +383,7 @@ void JkRS485Monitor::handle_legacy_reply_(size_t size) {
 }
 
 void JkRS485Monitor::note_master_activity_(uint32_t now) {
-  this->rs485_network_node[0].last_message_received = now;
+  this->nodes_[0].last_message_received = now;
   this->set_node_availability(0, 1);
 }
 
@@ -391,7 +391,7 @@ void JkRS485Monitor::note_slave_activity_(uint8_t address, uint32_t now) {
   if (address > MAX_ADDRESS) {
     return;
   }
-  this->rs485_network_node[address].last_message_received = now;
+  this->nodes_[address].last_message_received = now;
   if (address != 0) {
     this->set_node_availability(address, 1);
   }
@@ -407,13 +407,13 @@ void JkRS485Monitor::dispatch_legacy_reply_(uint8_t origin, uint8_t frame_type, 
     return;
   }
   for (auto *device : this->devices_) {
-    device->on_jk_rs485_monitor_data(origin, frame_type, data, this->nodes_available);
+    device->on_jk_rs485_monitor_data(origin, frame_type, data, this->nodes_available_);
   }
 }
 
 void JkRS485Monitor::dispatch_nw_frame_(const NwFrame &frame) {
   for (auto *device : this->devices_) {
-    device->on_jk_rs485_monitor_nw_frame(frame, this->nodes_available);
+    device->on_jk_rs485_monitor_nw_frame(frame, this->nodes_available_);
   }
 }
 
@@ -421,35 +421,29 @@ void JkRS485Monitor::dispatch_nw_frame_(const NwFrame &frame) {
 // Nodes
 // ---------------------------------------------------------------------------------------------------------------
 
-std::string JkRS485Monitor::nodes_available_to_string() {
-  std::string bufferHex;
-  bufferHex.reserve(17);
-  for (uint8_t cont = 0; cont < 16; cont++) {
-    if (this->rs485_network_node[cont].available) {
-      bufferHex.push_back('1');
-    } else {
-      bufferHex.push_back('0');
-    }
+std::string JkRS485Monitor::nodes_available_to_string() const {
+  std::string text;
+  text.reserve(MAX_NODES);
+  for (const Node &node : this->nodes_) {
+    text.push_back(node.available ? '1' : '0');
   }
-
-  bufferHex.push_back('\0');
-  return bufferHex;
+  return text;
 }
 
 void JkRS485Monitor::set_node_availability(uint8_t address, bool value) {
   if (address > MAX_ADDRESS) {
-    ESP_LOGE(TAG, "address 0x%02X out of range (max 15), ignoring", address);
+    ESP_LOGE(TAG, "address 0x%02X out of range (max %u), ignoring", address, (unsigned int) MAX_ADDRESS);
     return;
   }
 
-  if (this->rs485_network_node[address].available != value) {
-    uint8_t previous_value = this->rs485_network_node[address].available;
-    this->rs485_network_node[address].available = value;
+  if (this->nodes_[address].available != value) {
+    uint8_t previous_value = this->nodes_[address].available;
+    this->nodes_[address].available = value;
 
-    std::string previous = this->nodes_available;
-    this->nodes_available = this->nodes_available_to_string();
+    std::string previous = this->nodes_available_;
+    this->nodes_available_ = this->nodes_available_to_string();
     ESP_LOGI(TAG, "NODES AVAILABLE CHANGED: address 0x%02X (%d->%d) [%s] --> [%s]", address, previous_value, value,
-             previous.c_str(), this->nodes_available.c_str());
+             previous.c_str(), this->nodes_available_.c_str());
   }
 }
 

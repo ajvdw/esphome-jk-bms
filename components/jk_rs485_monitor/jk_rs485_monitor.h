@@ -14,7 +14,6 @@ namespace jk_rs485_monitor {
 
 enum ProtocolVersion {
   PROTOCOL_VERSION_JK04,
-  PROTOCOL_VERSION_JK02_24S,
   PROTOCOL_VERSION_JK02_32S,
 };
 
@@ -35,16 +34,8 @@ class JkRS485Monitor : public uart::UARTDevice, public Component {
   JkRS485Monitor() = default;
 
   void setup() override {
-    for (uint8_t cont = 0; cont < 16; cont++) {
-      rs485_network_node[cont].available = false;
-      rs485_network_node[cont].last_message_received = 0;
-    }
-
-    nodes_available.reserve(17);
-    for (uint8_t cont = 0; cont < 16; cont++) {
-      nodes_available.push_back('0');
-    }
-    nodes_available.push_back('\0');
+    // One character per address: '1' if the node is available
+    this->nodes_available_.assign(MAX_NODES, '0');
 
     this->rx_buffer_.reserve(RX_BUFFER_MAX_SIZE);
     this->rx_times_.reserve(RX_BUFFER_MAX_SIZE);
@@ -62,9 +53,8 @@ class JkRS485Monitor : public uart::UARTDevice, public Component {
   void set_rx_timeout(uint16_t rx_timeout) { rx_timeout_ = rx_timeout; }
 
  protected:
-  ProtocolVersion protocol_version_{PROTOCOL_VERSION_JK02_32S};
-
   static constexpr size_t RX_BUFFER_MAX_SIZE = 4 * 308;
+  static constexpr uint8_t MAX_NODES = 16;
 
   // --- receiving
   bool parse_head_();
@@ -89,7 +79,7 @@ class JkRS485Monitor : public uart::UARTDevice, public Component {
   void note_master_activity_(uint32_t now);
   void note_slave_activity_(uint8_t address, uint32_t now);
 
-  std::string nodes_available_to_string();
+  std::string nodes_available_to_string() const;
   void set_node_availability(uint8_t address, bool value);
 
   // Bytes that were received but not yet handled, with the time (millis) each byte was read
@@ -117,13 +107,14 @@ class JkRS485Monitor : public uart::UARTDevice, public Component {
 
   std::vector<JkRS485MonitorDevice *> devices_;
 
-  struct struct_rs485_network_node {
-    bool available;
-    uint32_t last_message_received;
+  // The nodes on the bus: the master (address 0) and the BMSs
+  struct Node {
+    bool available{false};
+    uint32_t last_message_received{0};
   };
-  struct struct_rs485_network_node rs485_network_node[16];
+  Node nodes_[MAX_NODES];
 
-  std::string nodes_available;
+  std::string nodes_available_;
 };
 
 class JkRS485MonitorDevice {

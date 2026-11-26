@@ -1,7 +1,6 @@
 #pragma once
 
-// Protocol layer of the JK RS485 monitor. This file has no ESPHome dependencies, so it can be unit tested on a PC
-// (see tests/test_monitor_protocol.cpp).
+// Protocol layer of the JK RS485 monitor. This file has no ESPHome dependencies, so it can be unit tested on a PC.
 
 #include <cstddef>
 #include <cstdint>
