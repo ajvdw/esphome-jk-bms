@@ -7,8 +7,6 @@ from . import CONF_JK_RS485_BMS_ID, JK_RS485_BMS_COMPONENT_SCHEMA, inherit_hub_d
 
 DEPENDENCIES = ["jk_rs485_bms"]
 
-CODEOWNERS = ["@syssi", "@txubelaxu"]
-
 CONF_BATTERY_TYPE = "battery_type"
 CONF_ERRORS = "errors"
 CONF_CHARGE_STATUS = "charge_status"
